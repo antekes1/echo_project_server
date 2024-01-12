@@ -21,10 +21,7 @@ This server use Echo app.
 
 # Features
 
-- Ban and ping command
-- Right click to get info about user
-- bot logs
-- messages report
+- register, login user
 
 # In Development / Planned
 
