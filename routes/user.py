@@ -12,6 +12,7 @@ from pathlib import Path
 from schemas.user import Token, UserBase
 from .auth import get_current_user
 
+
 router = APIRouter(
     prefix='/user',
     tags=['user']
@@ -38,12 +39,3 @@ async def read_user(user_token: str, db: db_dependency):
         raise HTTPException(status_code=404, detail='User not found')
     data = {'username': user.username, 'profile_pic': user.profile_photo, 'email': user.email, 'name': user.name}
     return data
-
-@router.get('/photo/{filename}')
-def get_profile_photo(filename: str):
-    file_path = Path("static/photos") / filename
-    # return FileResponse(path=file_path, filename=filename, media_type='image/png')
-    file_stream = open(file_path, mode="rb")
-    
-    # Zwróć odpowiedź strumieniową
-    return StreamingResponse(file_stream, media_type="image/png")

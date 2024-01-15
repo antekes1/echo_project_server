@@ -9,6 +9,9 @@ import models
 from database import engine, SeesionLocal
 from sqlalchemy.orm import Session
 from schemas.user import UserBase
+from fastapi.middleware.cors import CORSMiddleware
+from pathlib import Path
+from fastapi.responses import FileResponse, StreamingResponse
 
 #import routes
 routes_list = []
@@ -22,6 +25,11 @@ for file in os.listdir("./routes"):
 
 app = FastAPI(title="Echo", summary="echo")
 models.Base.metadata.create_all(bind=engine)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+)
 
 # aa = auth
 # app.include_router(aa.router)
@@ -50,3 +58,15 @@ def home():
         </body>
     </html>
     """
+@app.get('/status')
+async def check_status():
+    return 'online'
+
+@app.get('/photo/{filename}')
+def get_profile_photo(filename: str):
+    file_path = Path("static/photos") / filename
+    # return FileResponse(path=file_path, filename=filename, media_type='image/png')
+    file_stream = open(file_path, mode="rb")
+    
+    # Zwróć odpowiedź strumieniową
+    return StreamingResponse(file_stream, media_type="image/png")
