@@ -50,7 +50,7 @@ async def home(request: Request, db: db_dependency):
         return templates.TemplateResponse('admin_panel.html', {'request': request, 'token': token, 'errors': errors})
     ## Działania do dashboardu admina
     if auth == True:
-        users_list = db.query(User)
+        users_list = db.query(User)[0:50]
     return templates.TemplateResponse('admin_panel.html', {'request': request, 'token': token, 'errors': errors, 'user': user, 'users_list': users_list})
 
 # @router.post("/")

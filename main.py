@@ -31,9 +31,6 @@ app.add_middleware(
     allow_credentials=True,
 )
 
-# aa = auth
-# app.include_router(aa.router)
-
 for thing in routes_list:
     app.include_router(thing.router)
 

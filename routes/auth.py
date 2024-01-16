@@ -110,7 +110,7 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_bearer)], db):
                 raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f'Token expired.')
         return {'username': username, 'id': user_id}
     except JWTError as error:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f'Could not validate user. {error}')
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f'Could not validate user.')
     
 @router.post("/delete_token/{token}", response_model=bool)
 async def login_user(token: str, db: db_dependency):
