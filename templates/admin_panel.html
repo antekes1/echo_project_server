@@ -44,6 +44,18 @@
             {% endif %}
           </div>
           <div class="col">
+            <h4>Storages: </h4>
+            {% if storage_list %}
+            <ul class="list-group list-group-item">
+              {% for storage in storage_list %}
+              <li class="list-group-item">
+                {{storage.name}}
+              </li>
+              {% endfor %}
+            </ul>
+            {% endif %}
+          </div>
+          <div class="col">
             <h4>Tasks: </h4>
           </div>
         </div>
