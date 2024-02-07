@@ -31,6 +31,8 @@ app.add_middleware(
     allow_credentials=True,
 )
 
+app.config = {"max_upload_size": "500.0 MB"}
+
 for thing in routes_list:
     app.include_router(thing.router)
 

@@ -6,3 +6,4 @@ load_dotenv()
 url_database = os.getenv("URL_DATABASE")
 algorithm = str(os.getenv("ALGORITM"))
 secret_key_token = str(os.getenv("SECRET_KEY"))
+storages_path = 'files/storages/'
