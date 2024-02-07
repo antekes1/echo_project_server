@@ -2,23 +2,18 @@ from datetime import timedelta, datetime
 from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from fastapi.responses import FileResponse, StreamingResponse
-from pydantic import BaseModel
 from fastapi.encoders import jsonable_encoder
-
 import models
 from sqlalchemy import func
 from sqlalchemy.sql import text
 from sqlalchemy.orm import Session
 import shutil
-
 from starlette import status
 from database import SeesionLocal
 from pathlib import Path
 import json, os
 from settings import storages_path
-
-from schemas.user import Token, UserBase
-from schemas.storage import CreateDatabaseBase, FilesBase, GetFileBase , UploadFileBase
+from schemas.storage import CreateDatabaseBase, FilesBase, GetFileBase
 from .auth import get_current_user
 
 
@@ -115,11 +110,10 @@ async def get_files_infile(db: db_dependency, request: GetFileBase):
         raise HTTPException(status_code=404, detail='User not found')
     if storage is None:
         raise HTTPException(status_code=404, detail='Storage not found')
-    if not user in storage.valid_users and user.perm == 'admin' or 'owner':
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='User permission denty')
+    if not user in storage.valid_users and str(user.perm) not in ['owner', 'admin']:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='User permission denied')
     else:
         path = storages_path + f'{storage.id}' + request.file_path
-        # przetesotwać to ===
         try:
             return FileResponse(path, media_type="application/octet-stream", filename=request.filename)
         except FileNotFoundError:
@@ -141,11 +135,52 @@ async def upload_file(db: db_dependency, token: str = Form(...), dir_path: str =
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='User permission denied')
     else:
         path = storages_path + str(storage.id) + dir_path + file.filename
-        if file.filename in os.listdir(storages_path + str(storage.id) + dir_path):
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='That file already exist')
         try:
             with open(path, "wb") as buffer:
                 shutil.copyfileobj(file.file, buffer)
         finally:
             file.file.close()
         return {'msg': 'File upload successful'}
+
+@router.delete("/del_item", status_code=status.HTTP_200_OK)
+async def delete_file(db: db_dependency, request: FilesBase):
+    data = await get_current_user(token=request.token, db=db)
+    if 'username' in data:
+        id = data['id']
+        user = db.query(models.User).filter(models.User.id == id).first()
+    storage = db.query(models.Storage).filter(models.Storage.id == request.database_id).first()
+    if user is None:
+        raise HTTPException(status_code=404, detail='User not found')
+    if storage is None:
+        raise HTTPException(status_code=404, detail='Storage not found')
+    if not user in storage.valid_users and str(user.perm) not in ['owner', 'admin']:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='User permission denied')
+    else:
+        path = storages_path + f'{storage.id}' + request.path
+        if os.path.isfile(path):
+            os.unlink(path)
+            return {'msg': 'File successfully deleted'}
+        elif os.path.isdir(path):
+            shutil.rmtree(path)
+            return {'msg': 'Dir successfully deleted'}
+        else:
+            raise HTTPException(status_code=404, detail="File not found")
+
+@router.post("/create_dir", status_code=status.HTTP_201_CREATED)
+async def get_files_infile(db: db_dependency, request: FilesBase):
+    data = await get_current_user(token=request.token, db=db)
+    if 'username' in data:
+        username = data['username']
+        id = data['id']
+        user = db.query(models.User).filter(models.User.id == id).first()
+    storage = db.query(models.Storage).filter(models.Storage.id == request.database_id).first()
+    if user is None:
+        raise HTTPException(status_code=404, detail='User not found')
+    if storage is None:
+        raise HTTPException(status_code=404, detail='Storage not found')
+    if not user in storage.valid_users and str(user.perm) not in ['owner', 'admin']:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='User permission denied')
+    else:
+        path = storages_path + str(request.database_id) + request.path
+        os.mkdir(path)
+        return {'msg': 'Dir created successful'}
