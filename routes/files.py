@@ -62,7 +62,10 @@ async def read_user(request: CreateDatabaseBase, db: db_dependency):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Storage with that name exist')
     if user is None:
         raise HTTPException(status_code=404, detail='User not found')
-    new_storage = models.Storage( 
+    user_storages = db.query(models.Storage).filter(models.Storage.owner_id == user.id).all()
+    if len(user_storages) >= 1 and str(user.perm) not in ['admin', 'owner']:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='You have your storage already created')
+    new_storage = models.Storage(
         name=request.name,
         description = request.descr,
         owner_id = user.id,
@@ -135,6 +138,14 @@ async def upload_file(db: db_dependency, token: str = Form(...), dir_path: str =
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='User permission denied')
     else:
         path = storages_path + str(storage.id) + dir_path + file.filename
+        folder_path = storages_path + str(storage.id) + dir_path
+        total_size = 0
+        for dirpath, dirnames, filenames in os.walk(folder_path):
+            for filename in filenames:
+                file_path = os.path.join(dirpath, filename)
+                total_size += os.path.getsize(file_path)
+        if total_size + file.size > storage.max_size * 1000000000 and str(user.perm) not in ['owner', 'admin']:
+            raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail='The file size is to big for your storage limit')
         try:
             with open(path, "wb") as buffer:
                 shutil.copyfileobj(file.file, buffer)
