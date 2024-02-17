@@ -14,7 +14,7 @@ import random, string
 import sqlalchemy
 from settings import secret_key_token, algorithm
 
-from schemas.user import Token, UserBase
+from schemas.user import Token, UserBase, ChangePassword
 
 router = APIRouter(
     prefix='/auth',
@@ -79,7 +79,7 @@ def create_acces_token(username: str, user_id: int, expires_date: timedelta, db)
     if expires_date != None:
         expires = datetime.utcnow() + expires_date
         encode.update({'exp': expires})
-    if user.security_char != None:
+    if user.security_char == None:
         print('aaa')
         secure_code = ''.join(random.choices(string.ascii_letters + string.digits, k=24))
         updated_fields = {}
@@ -113,7 +113,7 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_bearer)], db):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f'Could not validate user.')
     
 @router.post("/delete_token/{token}", response_model=bool)
-async def login_user(token: str, db: db_dependency):
+async def del_token(token: str, db: db_dependency):
     data = await get_current_user(token, db)
     if 'username' in data:
         id = data['id']
@@ -124,3 +124,20 @@ async def login_user(token: str, db: db_dependency):
         return True
     else:
         False
+
+@router.post('/change_password', status_code=status.HTTP_200_OK)
+async def change_password(db: db_dependency, request: ChangePassword):
+    data = await get_current_user(request.token, db)
+    if 'username' in data:
+        id = data['id']
+        user = db.query(models.User).filter(models.User.id == id).first()
+    if user is None:
+        raise HTTPException(status_code=404, detail='User not found')
+
+    user.password = bcrypt_context.hash(request.new_password)
+    try:
+        db.commit()
+        ignore = await del_token(token=request.token, db=db)
+        return {'msg': "succes"}
+    except sqlalchemy.exc.IntegrityError as error:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f'Invalid data')

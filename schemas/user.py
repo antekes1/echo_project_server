@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from typing import Optional
 
 class UserBase(BaseModel):
     username: str
@@ -9,3 +10,13 @@ class UserBase(BaseModel):
 class Token(BaseModel):
     acces_token: str
     toke_type: str
+
+class ChangePassword(BaseModel):
+    token: str
+    new_password: str
+
+class updateUser(BaseModel):
+    token: str
+    name: str = None
+    username: str = None
+    email: str = None
