@@ -40,6 +40,16 @@ async def read_user(user_token: str, db: db_dependency):
     data = {'username': user.username, 'profile_pic': user.profile_photo, 'email': user.email, 'name': user.name}
     return data
 
+
+@router.get("/{user_id}", status_code=status.HTTP_200_OK)
+async def user_info(user_id: str, db: db_dependency):
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+
+    if user is None:
+        raise HTTPException(status_code=404, detail='User not found')
+    data = {'username': user.username, 'profile_pic': user.profile_photo, 'name': user.name}
+    return data
+
 @router.post("/update", status_code=status.HTTP_200_OK)
 async def update_user(db: db_dependency, request: updateUser):
     data = await get_current_user(token=request.token, db=db)
@@ -50,7 +60,7 @@ async def update_user(db: db_dependency, request: updateUser):
     if user != None:
         to_update_fields = {}
         for key, value in request.dict().items():
-            if value != None:
+            if value != "None":
                 if key != 'token':
                     # user.{key} = value
                     if hasattr(user, key):  # Sprawdź, czy model User ma pole o tej nazwie

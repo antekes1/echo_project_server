@@ -17,6 +17,7 @@ This server use Echo app.
 # In Development / Planned
 
 - files searching
+- add ai
 
 # Building
 

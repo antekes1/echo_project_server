@@ -69,3 +69,7 @@ def get_profile_photo(filename: str):
     
     # Zwróć odpowiedź strumieniową
     return StreamingResponse(file_stream, media_type="image/png")
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=5000)
