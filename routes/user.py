@@ -41,7 +41,7 @@ async def read_user(user_token: str, db: db_dependency):
     return data
 
 
-@router.get("/{user_id}", status_code=status.HTTP_200_OK)
+@router.get("/get/{user_id}", status_code=status.HTTP_200_OK)
 async def user_info(user_id: str, db: db_dependency):
     user = db.query(models.User).filter(models.User.id == user_id).first()
 

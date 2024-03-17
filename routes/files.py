@@ -16,7 +16,7 @@ from database import SeesionLocal
 from pathlib import Path
 import json, os
 from settings import storages_path
-from schemas.storage import CreateDatabaseBase, FilesBase, GetFileBase, updateStorage, ManageUsersStorages
+from schemas.storage import CreateDatabaseBase, FilesBase, GetFileBase, updateStorage, ManageUsersStorages, StorageInfo
 from .auth import get_current_user
 
 
@@ -53,8 +53,32 @@ async def read_user(user_token: str, db: db_dependency):
     data = {'storages': storages_data}
     return data
 
+@router.post("/info", status_code=status.HTTP_200_OK)
+async def get_storage_info(db: db_dependency, request: StorageInfo):
+    data = await get_current_user(token=request.token, db=db)
+    if 'id' in data:
+        id = data['id']
+        user = db.query(models.User).filter(models.User.id == id).first()
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='User not found')
+    storage = db.query(models.Storage).filter(models.Storage.id == request.storage_id).first()
+    if storage is None:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Storage do not exist.')
+    if user not in storage.valid_users:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="You have not permission to this storage.")
+
+    owner_storage = db.query(models.User).filter(models.User.id == storage.owner_id).first()
+    total_size = 0
+    storage_path = storages_path + str(storage.id)
+    for dirpath, dirnames, filenames in os.walk(storage_path):
+        for filename in filenames:
+            file_path = os.path.join(dirpath, filename)
+            total_size += os.path.getsize(file_path)
+    data = {'name': storage.name, 'description': storage.description, 'owner_username': owner_storage.username, 'max_size': storage.max_size, 'actual_size': total_size}
+    return data
+
 @router.post("/create_storage", status_code=status.HTTP_200_OK)
-async def read_user(request: CreateDatabaseBase, db: db_dependency):
+async def create_storage(request: CreateDatabaseBase, db: db_dependency):
     data = await get_current_user(token=request.token, db=db)
     if 'username' in data:
         username = data['username']
@@ -223,8 +247,9 @@ async def upload_file(db: db_dependency, token: str = Form(...), dir_path: str =
     else:
         path = storages_path + str(storage.id) + dir_path + file.filename
         folder_path = storages_path + str(storage.id) + dir_path
+        storage_path = storages_path + str(storage.id)
         total_size = 0
-        for dirpath, dirnames, filenames in os.walk(folder_path):
+        for dirpath, dirnames, filenames in os.walk(storage_path):
             for filename in filenames:
                 file_path = os.path.join(dirpath, filename)
                 total_size += os.path.getsize(file_path)

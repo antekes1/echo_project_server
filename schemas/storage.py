@@ -1,5 +1,9 @@
 from pydantic import BaseModel
 
+class StorageInfo(BaseModel):
+    token: str
+    storage_id: int
+
 class CreateDatabaseBase(BaseModel):
     token: str
     name: str

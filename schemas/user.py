@@ -13,6 +13,7 @@ class Token(BaseModel):
 
 class ChangePassword(BaseModel):
     token: str
+    old_password: str
     new_password: str
 
 class updateUser(BaseModel):
