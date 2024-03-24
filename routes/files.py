@@ -121,7 +121,7 @@ async def update_storage(db: db_dependency, request: updateStorage):
         raise HTTPException(status_code=404, detail='You must be a owner of storage, to modify it.')
     if request.name.lower() != "none":
         test_storage = db.query(models.Storage).filter(models.Storage.name == request.name).first()
-        if test_storage != None:
+        if test_storage != None and test_storage.id != storage.id:
             raise HTTPException(status_code=404, detail='Storage with that name already exist')
         storage.name = request.name
     if request.descr.lower() != "none":
