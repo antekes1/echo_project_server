@@ -194,18 +194,28 @@ async def get_files_infile(request: FilesBase, db: db_dependency):
         username = data['username']
         id = data['id']
         user = db.query(models.User).filter(models.User.id == id).first()
-    storage = db.query(models.Storage).filter(models.Storage.id == request.database_id).first()
+    storage = db.query(models.Storage).filter(models.Storage.id == request.storage_id).first()
 
     if user is None:
         raise HTTPException(status_code=404, detail='User not found')
     if storage is None:
         raise HTTPException(status_code=404, detail='Sotrage not found')
-    if not user in storage.valid_users and user.perm == 'admin' or 'owner':
+    if not user in storage.valid_users and str(user.perm) not in ['owner', 'admin']:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='User permission denty')
     else:
         path = storages_path + f'{storage.id}' + request.path
+        to_return = []
         try:
-            return os.listdir(path=path)
+            for element in os.listdir(path):
+                full_path = os.path.join(path, element)
+                if os.path.isfile(full_path):
+                    to_return.append([element, 'file'])
+                elif os.path.isdir(full_path):
+                    to_return.append([element, 'dir'])
+                else:
+                    print(f"{element} nie jest ani plikiem, ani folderem.")
+            #return os.listdir(path=path)
+            return to_return
         except:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Bad request")
         

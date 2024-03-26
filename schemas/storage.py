@@ -23,7 +23,7 @@ class ManageUsersStorages(BaseModel):
 
 class FilesBase(BaseModel):
     token: str
-    database_id: int
+    storage_id: int
     path: str
 
 class GetFileBase(BaseModel):
