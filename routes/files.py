@@ -312,5 +312,8 @@ async def get_files_infile(db: db_dependency, request: FilesBase):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='User permission denied')
     else:
         path = storages_path + str(request.storage_id) + request.path
-        os.mkdir(path)
+        if not os.path.exists(path):
+            os.mkdir(path)
+        else:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='That dir already exist')
         return {'msg': 'Dir created successful'}
