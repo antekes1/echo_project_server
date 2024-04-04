@@ -303,7 +303,7 @@ async def get_files_infile(db: db_dependency, request: FilesBase):
         username = data['username']
         id = data['id']
         user = db.query(models.User).filter(models.User.id == id).first()
-    storage = db.query(models.Storage).filter(models.Storage.id == request.database_id).first()
+    storage = db.query(models.Storage).filter(models.Storage.id == request.storage_id).first()
     if user is None:
         raise HTTPException(status_code=404, detail='User not found')
     if storage is None:
@@ -311,6 +311,6 @@ async def get_files_infile(db: db_dependency, request: FilesBase):
     if not user in storage.valid_users and str(user.perm) not in ['owner', 'admin']:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='User permission denied')
     else:
-        path = storages_path + str(request.database_id) + request.path
+        path = storages_path + str(request.storage_id) + request.path
         os.mkdir(path)
         return {'msg': 'Dir created successful'}
