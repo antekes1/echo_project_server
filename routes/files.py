@@ -1,3 +1,4 @@
+import http
 from datetime import timedelta, datetime
 from typing import Annotated
 
@@ -285,6 +286,8 @@ async def delete_file(db: db_dependency, request: FilesBase):
         raise HTTPException(status_code=404, detail='Storage not found')
     if not user in storage.valid_users and str(user.perm) not in ['owner', 'admin']:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='User permission denied')
+    if request.path == "/":
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="You can't delete baise directory with that command")
     else:
         path = storages_path + f'{storage.id}' + request.path
         if os.path.isfile(path):
