@@ -133,9 +133,9 @@ async def change_password(db: db_dependency, request: ChangePassword):
         user = db.query(models.User).filter(models.User.id == id).first()
     if user is None:
         raise HTTPException(status_code=404, detail='User not found')
-    auth = auth_user(username=user.username, password=request.old_password)
+    auth = auth_user(username=user.username, password=request.old_password, db=db)
     if auth == False:
-        raise HTTPException(status_code=404, detail="Old password is incorrect")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Old password is incorrect")
 
     user.password = bcrypt_context.hash(request.new_password)
     try:

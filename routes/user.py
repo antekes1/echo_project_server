@@ -37,7 +37,7 @@ async def read_user(user_token: str, db: db_dependency):
     
     if user is None:
         raise HTTPException(status_code=404, detail='User not found')
-    data = {'username': user.username, 'profile_pic': user.profile_photo, 'email': user.email, 'name': user.name}
+    data = {'username': user.username, 'profile_pic': user.profile_photo, 'email': user.email, 'name': user.name, 'account_type': user.perm}
     return data
 
 

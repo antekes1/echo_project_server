@@ -8,6 +8,11 @@ class CreateDatabaseBase(BaseModel):
     token: str
     name: str
     descr: str
+    size: float
+
+class DelStorageBase(BaseModel):
+    token: str
+    storage_id: int
 
 class updateStorage(BaseModel):
     token: str
@@ -25,6 +30,8 @@ class FilesBase(BaseModel):
     token: str
     storage_id: int
     path: str
+
+
 
 class GetFileBase(BaseModel):
     token: str

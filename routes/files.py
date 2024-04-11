@@ -17,7 +17,7 @@ from database import SeesionLocal
 from pathlib import Path
 import json, os
 from settings import storages_path
-from schemas.storage import CreateDatabaseBase, FilesBase, GetFileBase, updateStorage, ManageUsersStorages, StorageInfo
+from schemas.storage import CreateDatabaseBase, FilesBase, GetFileBase, updateStorage, ManageUsersStorages, StorageInfo, DelStorageBase
 from .auth import get_current_user
 
 
@@ -93,17 +93,41 @@ async def create_storage(request: CreateDatabaseBase, db: db_dependency):
     user_storages = db.query(models.Storage).filter(models.Storage.owner_id == user.id).all()
     if len(user_storages) >= 1 and str(user.perm) not in ['admin', 'owner']:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='You have your storage already created')
+    if str(user.perm) not in ['admin', 'owner'] and request.size < 5:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="You can not create storage with size bigger then 5 GB")
     new_storage = models.Storage(
         name=request.name,
         description = request.descr,
         owner_id = user.id,
+        max_size = request.size,
     )
     db.add(new_storage)
     db.commit()
     new_storage.valid_users.append(user)
     db.commit()
-    folder_path = os.path.join('./files/storages/', str(new_storage.id))
+    folder_path = os.path.join(storages_path, str(new_storage.id))
     os.makedirs(folder_path)
+    data = {'msg': 'succes'}
+    return data
+
+@router.post("/delete_storage", status_code=status.HTTP_200_OK)
+async def del_storage(request: DelStorageBase, db: db_dependency):
+    data = await get_current_user(token=request.token, db=db)
+    if 'username' in data:
+        username = data['username']
+        id = data['id']
+        user = db.query(models.User).filter(models.User.id == id).first()
+    storage = db.query(models.Storage).filter(models.Storage.id == request.storage_id).first()
+    if storage == None:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Storage do not exist')
+    if user is None:
+        raise HTTPException(status_code=404, detail='User not found')
+    if user.id != storage.owner_id and str(user.perm) not in ['admin', 'owner']:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="You can't delete that storage because you are not owner of storage")
+    folder_path = os.path.join(storages_path, str(storage.id))
+    db.delete(storage)
+    db.commit()
+    shutil.rmtree(folder_path)
     data = {'msg': 'succes'}
     return data
 @router.put("/update", status_code=status.HTTP_200_OK)
@@ -279,7 +303,7 @@ async def delete_file(db: db_dependency, request: FilesBase):
     if 'username' in data:
         id = data['id']
         user = db.query(models.User).filter(models.User.id == id).first()
-    storage = db.query(models.Storage).filter(models.Storage.id == request.database_id).first()
+    storage = db.query(models.Storage).filter(models.Storage.id == request.storage_id).first()
     if user is None:
         raise HTTPException(status_code=404, detail='User not found')
     if storage is None:
