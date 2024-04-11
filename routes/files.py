@@ -17,6 +17,7 @@ from database import SeesionLocal
 from pathlib import Path
 import json, os
 from settings import storages_path
+from utils.perimissions import InheritedPermissions, Perms
 from schemas.storage import CreateDatabaseBase, FilesBase, GetFileBase, updateStorage, ManageUsersStorages, StorageInfo, DelStorageBase
 from .auth import get_current_user
 
@@ -91,7 +92,7 @@ async def create_storage(request: CreateDatabaseBase, db: db_dependency):
     if user is None:
         raise HTTPException(status_code=404, detail='User not found')
     user_storages = db.query(models.Storage).filter(models.Storage.owner_id == user.id).all()
-    if len(user_storages) >= 1 and str(user.perm) not in ['admin', 'owner']:
+    if len(user_storages) >= 1 and Perms().infinity_creating_dirs not in InheritedPermissions().get_permissions(user.perm):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='You have your storage already created')
     if str(user.perm) not in ['admin', 'owner'] and request.size < 5:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="You can not create storage with size bigger then 5 GB")
@@ -122,7 +123,7 @@ async def del_storage(request: DelStorageBase, db: db_dependency):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Storage do not exist')
     if user is None:
         raise HTTPException(status_code=404, detail='User not found')
-    if user.id != storage.owner_id and str(user.perm) not in ['admin', 'owner']:
+    if user.id != storage.owner_id and Perms().deleting_storages not in InheritedPermissions().get_permissions(user.perm):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="You can't delete that storage because you are not owner of storage")
     folder_path = os.path.join(storages_path, str(storage.id))
     db.delete(storage)
@@ -142,7 +143,7 @@ async def update_storage(db: db_dependency, request: updateStorage):
         raise HTTPException(status_code=404, detail='Storage do not exist')
     if user is None:
         raise HTTPException(status_code=404, detail='User not found')
-    if user.id != storage.owner_id:
+    if user.id != storage.owner_id and Perms().edit_storages not in InheritedPermissions().get_permissions(user.perm):
         raise HTTPException(status_code=404, detail='You must be a owner of storage, to modify it.')
     if request.name.lower() != "none":
         test_storage = db.query(models.Storage).filter(models.Storage.name == request.name).first()
@@ -168,9 +169,8 @@ async def updated_storage_users(db: db_dependency, request: ManageUsersStorages)
         raise HTTPException(status_code=404, detail='Storage do not exist')
     if user is None:
         raise HTTPException(status_code=404, detail='User not found')
-    if user.id != storage.owner_id:
-        raise HTTPException(status_code=404, detail='You must be a owner of storage, to modify it.')
-
+    if user not in storage.valid_users:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail='You must have perm to this storage')
     errors = []
     if request.action == 'get_current_users':
         validated_users = []
@@ -178,6 +178,9 @@ async def updated_storage_users(db: db_dependency, request: ManageUsersStorages)
             validated_users.append(user.username)
         return {'current_users': validated_users}
     elif request.action == 'add_users':
+        if user.id != storage.owner_id and Perms().infinity_creating_dirs not in InheritedPermissions().get_permissions(user.perm):
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                                detail='You must be a owner of storage, to modify it.')
         if request.updated_users_usernames != []:
             for username in request.updated_users_usernames:
                 user_toadd = db.query(models.User).filter(models.User.username == username).first()
@@ -190,6 +193,9 @@ async def updated_storage_users(db: db_dependency, request: ManageUsersStorages)
                 else:
                     errors.append('User does not exist')
     elif request.action == 'remove_users':
+        if user.id != storage.owner_id and Perms().infinity_creating_dirs not in InheritedPermissions().get_permissions(user.perm):
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                                detail='You must be a owner of storage, to modify it.')
         if request.updated_users_usernames != []:
             for username in request.updated_users_usernames:
                 user_toadd = db.query(models.User).filter(models.User.username == username).first()
