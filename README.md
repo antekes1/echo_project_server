@@ -13,6 +13,7 @@ This server use Echo app.
 
 - User registration & login
 - Uploading and downloading files form storage
+- managing storages, sharing storage
 
 # In Development / Planned
 
@@ -38,4 +39,5 @@ uvicorn main:app --reload
 
 # Bug Reports / Feature Suggestions
 
-You can [open an issue](https://github.com/antekes1/echo_project_server/issues)
+You can [open an issue](https://github.com/antekes1/echo_project_server/issues) 
+or you can join our [discord](https://discord.gg/dRMjjtWjdc)
