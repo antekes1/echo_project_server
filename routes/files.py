@@ -70,7 +70,7 @@ async def get_storage_info(db: db_dependency, request: StorageInfo):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="You have not permission to this storage.")
 
     owner_storage = db.query(models.User).filter(models.User.id == storage.owner_id).first()
-    total_size = 0
+    total_size = 0.0
     storage_path = storages_path + str(storage.id)
     for dirpath, dirnames, filenames in os.walk(storage_path):
         for filename in filenames:
@@ -294,7 +294,7 @@ async def upload_file(db: db_dependency, token: str = Form(...), dir_path: str =
             for filename in filenames:
                 file_path = os.path.join(dirpath, filename)
                 total_size += os.path.getsize(file_path)
-        if total_size + file.size > storage.max_size * 1000000000 and str(user.perm) not in ['owner', 'admin']:
+        if total_size + file.size > storage.max_size * 1073741824 and str(user.perm) not in ['owner', 'admin']:
             raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail='The file size is to big for your storage limit')
         try:
             with open(path, "wb") as buffer:
