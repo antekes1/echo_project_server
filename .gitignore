@@ -2,5 +2,7 @@ __pycache__/
 .idea/
 .git/
 .env
-test.py
-files/
+fastapi/test.py
+fastapi/files/
+react/
+venv/
