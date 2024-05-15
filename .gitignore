@@ -4,5 +4,6 @@ __pycache__/
 .env
 fastapi/test.py
 fastapi/files/
-react/
 venv/
+node_modules/
+.vscode/

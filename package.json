@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "class-variance-authority": "^0.7.0",
+    "tailwind-merge": "^2.3.0"
+  }
+}
