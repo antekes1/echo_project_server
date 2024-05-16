@@ -1,19 +1,28 @@
-import { Home, UserCircle, Settings, ChevronDown, ChevronUp, HardDrive } from "lucide-react";
+import { Home, UserCircle, Settings, ChevronDown, ChevronUp, HardDrive, Menu } from "lucide-react";
 import React, { ReactNode, useState } from "react";
 import { ElementType } from "react";
 import { Button, buttonStyles } from "../components/Button";
 import { twMerge } from "tailwind-merge";
+import { useSidebarContext } from "../contexts/SidebarContext";
+import { NavbarFirstSection } from "./Navbar";
 
 export function Sidebar() {
+    const {toogle, isLargeOpen, isSmallOpen} = useSidebarContext()
     const example_storages = [{id: "1", name: "Storage1"}, {id: "2", name: "Storage2"},{id: "3", name: "Storage3"},{id: "4", name: "Storage4"},]
     return (
         <>
-        <aside className="sticky top-0 overflow-y-auto scrollbar-hidden pb-4 flex flex-col ml-1 lg:hidden">
+        <aside className={`sticky top-0 overflow-y-auto scrollbar-hidden pb-4 flex flex-col ml-1 ${isLargeOpen ? "lg:hidden": "lg:flex"}`}>
             <SmallSidebarItem Icon={Home} title="Home" url="/" />
             <SmallSidebarItem Icon={UserCircle} title="Profile Page" url="/profile" />
             <SmallSidebarItem Icon={Settings} title="Settings Page" url="/settings" />
         </aside>
-        <aside className="w-56 lg:sticky absolute top-0 overflow-y-auto scrollbar-hidden pb-4 flex-col gap-2 px-2 lg:flex hidden">
+        {isSmallOpen && (
+            <div onClick={close} className="lg:hidden fixed inset-0 z-[999] opacity-50"/>
+        )}
+        <aside className={`w-56 lg:sticky absolute top-0 overflow-y-auto scrollbar-hidden pb-4 flex-col gap-2 px-2 lg:flex ${isLargeOpen ? "lg:flex":"lg:hidden"} ${isSmallOpen ? "flex z-[999] bg-white max-h-screen": "hidden"}`}>
+            <div className="lg:hidden pt-2 pb-4 px-2 sticky top-0 bg-white">
+                <NavbarFirstSection hidden={false}/>
+            </div>
             <LargeSidebarSection >
                 <LargeSiderbarItem isActive Icon={Home} title="Home" url="/" />
                 <LargeSiderbarItem Icon={UserCircle} title="Profile Page" url="/profile" />

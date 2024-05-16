@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Button } from '../components/Button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Sidebar } from '../layouts/Sidebar';
+import { useSidebarContext } from '../contexts/SidebarContext';
 
 const TRANSATE_AMOUNT = 200
 
@@ -12,6 +13,7 @@ const Home = () => {
   const containerRef = useRef(null);
   const [isLeftVisable, setLeftVisable] = useState(false);
   const [isRightVisable, setRightVisable] = useState(false);
+  const {toogle} = useSidebarContext()
 
   useEffect(() => {
     if (containerRef.current == null) return

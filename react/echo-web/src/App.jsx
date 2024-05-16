@@ -7,9 +7,11 @@ import {
   Routes,
   Route,
 } from "react-router-dom";
+import { SidebarProvider } from "./contexts/SidebarContext";
 
 const App = () => {
   return (
+    <SidebarProvider>
     <div className="max-h-screen flex flex-col">
     <Router>
         <Navbar/>
@@ -18,6 +20,7 @@ const App = () => {
         </Routes>
     </Router>
     </div>
+    </SidebarProvider>
 );
 };
-export default App; 
+export default App;
