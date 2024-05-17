@@ -8,6 +8,8 @@ import {
   Route,
 } from "react-router-dom";
 import { SidebarProvider } from "./contexts/SidebarContext";
+import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
 
 const App = () => {
   return (
@@ -17,6 +19,8 @@ const App = () => {
         <Navbar/>
         <Routes>
             <Route exact path="/" element={<Home />} />
+            <Route exact path="/login" element={<LoginPage />} />
+            <Route exact path="/register" element={<RegisterPage />} />
         </Routes>
     </Router>
     </div>
