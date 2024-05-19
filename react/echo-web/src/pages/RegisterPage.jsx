@@ -99,7 +99,7 @@ const RegisterPage = () => {
                         </div>
                     </div>
                 </div>
-                <div className="w-full lg:hidden items-center justify-center lg:w-full mb-20 flex">
+                <div className="w-full lg:hidden items-center justify-center lg:w-full p-20 m-20 flex">
                     <div className="px-10 py-8 rounded-3xl border-2 border-black">
                         <img src={logo} alt="logo" className="h-20" />
                         <h1 className="text-5xl font-semibold mt-4">

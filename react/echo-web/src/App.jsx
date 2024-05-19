@@ -10,6 +10,8 @@ import {
 import { SidebarProvider } from "./contexts/SidebarContext";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
+import ProfilePage from "./pages/ProgilePage";
+import SettingsPage from "./pages/SettingsPage";
 
 const App = () => {
   return (
@@ -21,6 +23,8 @@ const App = () => {
             <Route exact path="/" element={<Home />} />
             <Route exact path="/login" element={<LoginPage />} />
             <Route exact path="/register" element={<RegisterPage />} />
+            <Route exact path="/profile" element={<ProfilePage />} />
+            <Route exact path="/settings" element={<SettingsPage />} />
         </Routes>
     </Router>
     </div>
