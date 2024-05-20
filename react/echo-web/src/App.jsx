@@ -10,8 +10,9 @@ import {
 import { SidebarProvider } from "./contexts/SidebarContext";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
-import ProfilePage from "./pages/ProgilePage";
+import ProfilePage from "./pages/ProfilePage";
 import SettingsPage from "./pages/SettingsPage";
+import StoragePage from "./pages/storage/StoragePage";
 
 const App = () => {
   return (
@@ -25,6 +26,7 @@ const App = () => {
             <Route exact path="/register" element={<RegisterPage />} />
             <Route exact path="/profile" element={<ProfilePage />} />
             <Route exact path="/settings" element={<SettingsPage />} />
+            <Route path="/storage/:id" element={<StoragePage />} />
         </Routes>
     </Router>
     </div>

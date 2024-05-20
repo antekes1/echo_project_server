@@ -5,16 +5,18 @@ import {  } from 'lucide-react';
 import { Sidebar } from '../layouts/Sidebar';
 import { useSidebarContext } from '../contexts/SidebarContext';
 import { useNavigate } from 'react-router-dom';
+import useColorMode from '../hooks/useColorMode.jsx'
 
 const ProfilePage = () => {
     const [updateData, setupdateData] = useState(false);
+    const [colorMode, setColorMode] = useColorMode();
     return (
         <div className="grid grid-cols-[auto,1fr] flex-grow-1 overflow-auto">
             <Sidebar/>
-            <div className="w-full flex h-screen">
+            <div className="w-full flex h-screen dark:bg-gray-900 bg-white dark:text-white">
                 <div className="flex w-full h-screen lg:flex-row flex-col">
                     <div className="lg:w-1/3 w-full flex lg:h-screen h-fit flex-col items-center p-2 border-2 rounded-3xl border-violet-300">
-                        <div className="p-2 rounded-full border-2 border-violet-500 mt-10">
+                        <div className="p-2 rounded-full border-2 border-violet-500 mt-10 dark:bg-white">
                             <img src={user} className="h-20 rounded-full"/>
                         </div>
                         <h1 className="mt-4">@username</h1>
@@ -70,7 +72,7 @@ const ProfilePage = () => {
                             </div>
                         </div>
                         <div className={`flex-col ${updateData ? "hidden" : "flex"} w-full lg:h-screen px-10 items-center justify-center`}>
-                            <div className="bg-gray-200 rounded-3xl border-2 border-violet-500 p-36">
+                            <div className="bg-gray-200 dark:bg-gray-700 rounded-3xl border-2 border-violet-500 p-36">
                                 <div className="w-60 h-60 bg-gradient-to-tr from-violet-500 to-pink-500 rounded-full animate-spin"/>
                             </div>
                         </div>

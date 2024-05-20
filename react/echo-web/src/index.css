@@ -4,6 +4,7 @@
 
 * {
     scrollbar-width: thin;
+    @apply transition-colors duration-75;
 }
 
 *::-webkit-scrollbar{

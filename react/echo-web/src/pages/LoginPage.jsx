@@ -5,17 +5,19 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Sidebar } from '../layouts/Sidebar';
 import { useSidebarContext } from '../contexts/SidebarContext';
 import { useNavigate } from 'react-router-dom';
+import useColorMode from "../hooks/useColorMode.jsx"
 
 const LoginPage = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+    const [colorMode, setColorMode] = useColorMode();
     const navigate = useNavigate();
     return (
         <div className="grid grid-cols-[auto,1fr] flex-grow-1 overflow-auto">
             <Sidebar/>
-            <div className="w-full flex h-screen">
+            <div className="w-full flex h-screen dark:bg-gray-900 bg-white dark:text-white">
                 <div className="w-full flex items-center justify-center lg:w-1/2 mb-20">
-                    <div className="px-10 py-20 rounded-3xl border-2 border-black">
+                    <div className="px-10 py-20 rounded-3xl border-2 border-black dark:border-white">
                         <img src={logo} alt="logo" className="h-20" />
                         <h1 className="text-5xl font-semibold mt-4">
                         Log in to your account

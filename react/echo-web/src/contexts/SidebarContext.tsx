@@ -52,7 +52,7 @@ export function SidebarProvider({children}: SidebarProviderProps) {
     }
 
     return( 
-    <SidebarContext.Provider value={{isLargeOpen, isSmallOpen, toogle, close}}>
+    <SidebarContext.Provider value={{isLargeOpen, isSmallOpen, toogle, close}} >
         {children}
     </SidebarContext.Provider>
     )

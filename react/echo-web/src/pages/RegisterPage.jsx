@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Sidebar } from '../layouts/Sidebar';
 import { useSidebarContext } from '../contexts/SidebarContext';
 import { useNavigate } from 'react-router-dom';
+import useColorMode from "../hooks/useColorMode.jsx"
 
 const RegisterPage = () => {
     const [username, setUsername] = useState('');
@@ -13,10 +14,11 @@ const RegisterPage = () => {
     const [email, setEmail] = useState('');
     const [ver_pin, setVer_pin] = useState('');
     const navigate = useNavigate();
+    const [colorMode, setColorMode] = useColorMode();
     return (
         <div className="grid grid-cols-[auto,1fr] flex-grow-1 overflow-auto">
             <Sidebar/>
-            <div className="w-full flex h-screen">
+            <div className="w-full flex h-screen dark:bg-gray-900 dark:text-white">
                 <div className="w-full lg:flex items-center justify-center lg:w-full mb-20 hidden">
                     <div className=" px-10 py-20 rounded-3xl mr-24">
                         <img src={logo} alt="logo" className="h-20" />
@@ -100,7 +102,7 @@ const RegisterPage = () => {
                     </div>
                 </div>
                 <div className="w-full lg:hidden items-center justify-center lg:w-full p-20 m-20 flex">
-                    <div className="px-10 py-8 rounded-3xl border-2 border-black">
+                    <div className="px-10 py-8 rounded-3xl border-2 border-black dark:border-white">
                         <img src={logo} alt="logo" className="h-20" />
                         <h1 className="text-5xl font-semibold mt-4">
                         Create your account
