@@ -13,6 +13,7 @@ import RegisterPage from "./pages/RegisterPage";
 import ProfilePage from "./pages/ProfilePage";
 import SettingsPage from "./pages/SettingsPage";
 import StoragePage from "./pages/storage/StoragePage";
+import StorageSettingsPage from "./pages/storage/StorageSettingsPage";
 
 const App = () => {
   return (
@@ -27,6 +28,7 @@ const App = () => {
             <Route exact path="/profile" element={<ProfilePage />} />
             <Route exact path="/settings" element={<SettingsPage />} />
             <Route path="/storage/:id" element={<StoragePage />} />
+            <Route path="/storage_settings/:id" element={<StorageSettingsPage />} />
         </Routes>
     </Router>
     </div>

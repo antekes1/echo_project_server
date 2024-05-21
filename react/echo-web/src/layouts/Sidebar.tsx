@@ -19,7 +19,7 @@ export function Sidebar() {
         {isSmallOpen && (
             <div onClick={close} className="lg:hidden fixed inset-0 z-[999] opacity-50"/>
         )}
-        <aside className={`dark:bg-gray-900 bg-white w-56 lg:sticky absolute top-0 overflow-y-auto scrollbar-hidden pb-4 flex-col gap-2 px-2 lg:flex ${isLargeOpen ? "lg:flex":"lg:hidden"} ${isSmallOpen ? "flex z-[999] bg-white max-h-screen": "hidden"}`}>
+        <aside className={`h-screen dark:bg-gray-900 bg-white w-56 lg:sticky absolute top-0 overflow-y-auto scrollbar-hidden pb-4 flex-col gap-2 px-2 lg:flex ${isLargeOpen ? "lg:flex":"lg:hidden"} ${isSmallOpen ? "flex z-[999] bg-white max-h-screen": "hidden"}`}>
             <div className="lg:hidden pt-2 pb-4 px-2 sticky top-0 bg-white dark:bg-gray-900">
                 <NavbarFirstSection hidden={false}/>
             </div>
@@ -31,7 +31,7 @@ export function Sidebar() {
             <hr/>
             <LargeSidebarSection title="Storages" visableItemCount={5}>
                 {example_storages.map(example_storages =>(
-                    <LargeSiderbarItem key={example_storages.id} Icon={HardDrive} title={example_storages.name} url={`/storage?id=${example_storages.id}`} />
+                    <LargeSiderbarItem key={example_storages.id} Icon={HardDrive} title={example_storages.name} url={`/storage/${example_storages.id}`} />
                 ))}
             </LargeSidebarSection>
         </aside>

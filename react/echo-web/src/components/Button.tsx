@@ -6,7 +6,7 @@ import { twMerge } from "tailwind-merge"
 export const buttonStyles = cva(["transition-colors"], {
     variants: {
         variant: {
-            default: ["bg-secondary", "hover:bg-secondary-hover"],
+            default: ["bg-secondary", "hover:bg-secondary-hover", "dark:bg-violet-700", "dark:hover:bg-violet-400"],
             ghost: ["hover:bg-gray-100 dark:hover:bg-gray-800"],
             transparent: ["hover:bg-transparent"],
             dark: ["bg-secondary-dark", "hover:bg-secondary-dark-hover", "text-secondary"]
