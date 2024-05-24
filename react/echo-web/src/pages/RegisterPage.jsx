@@ -15,6 +15,12 @@ const RegisterPage = () => {
     const [ver_pin, setVer_pin] = useState('');
     const navigate = useNavigate();
     const [colorMode, setColorMode] = useColorMode();
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            navigate('/'); // Przekieruj użytkownika do strony logowania, jeśli brakuje tokenu
+        }
+    }, [navigate]);
     return (
         <div className="grid grid-cols-[auto,1fr] flex-grow-1 overflow-auto">
             <Sidebar/>

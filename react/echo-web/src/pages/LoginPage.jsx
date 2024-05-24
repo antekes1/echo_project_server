@@ -6,12 +6,65 @@ import { Sidebar } from '../layouts/Sidebar';
 import { useSidebarContext } from '../contexts/SidebarContext';
 import { useNavigate } from 'react-router-dom';
 import useColorMode from "../hooks/useColorMode.jsx"
+import SERVER_URL from "../settings.jsx";
 
 const LoginPage = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [colorMode, setColorMode] = useColorMode();
     const navigate = useNavigate();
+    
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            navigate('/'); // Przekieruj użytkownika do strony logowania, jeśli brakuje tokenu
+        }
+    }, [navigate]);
+
+    const handleLogin = async (e) => {
+        e.preventDefault();
+        try {
+            var data = {
+                "username": username,
+                "password": password,
+            }
+            console.log(data)
+            var formBody = [];
+            for (var property in data) {
+              var encodedKey = encodeURIComponent(property);
+              var encodedValue = encodeURIComponent(data[property]);
+              formBody.push(encodedKey + "=" + encodedValue);
+            }
+            formBody = formBody.join("&");
+            
+            const response = await fetch(`${SERVER_URL}auth/login`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+              },
+              body: formBody
+            })
+
+            if (!response.ok) {
+                // Response is not OK, handle the error
+                const errorText = await response.text(); // Read error message from response
+                throw new Error(`Error ${response.status}: ${errorText}`);
+            }
+            const dataRes = await response.text();
+            const responseData = JSON.parse(dataRes);
+            const token = responseData.acces_token;
+            localStorage.setItem('token', token);
+            alert(`Logged in successfully!`);
+            navigate("/");
+            
+            // localStorage.setItem('token', acces_token); // Zapis tokena do localStorage
+            // alert('Logged in successfully!');
+          } catch (error) {
+            alert(error);
+            // alert('Invalid credentials');
+        }
+    };
+
     return (
         <div className="grid grid-cols-[auto,1fr] flex-grow-1 overflow-auto">
             <Sidebar/>
@@ -50,7 +103,7 @@ const LoginPage = () => {
                                     onChange={(e) => setPassword(e.target.value)} />
                                 </div>
                                 <div className="gap-y-4 flex flex-col w-full items-center">
-                                    <Button type="submit" className="active:scale-[.98] hover:scale-[1.01] hover:bg-violet-400 active:duration-75 py-4 rounded-xl bg-violet-500 text-white text-lg font-bold items-center w-5/6">
+                                    <Button onClick={handleLogin} type="submit" className="active:scale-[.98] hover:scale-[1.01] hover:bg-violet-400 active:duration-75 py-4 rounded-xl bg-violet-500 text-white text-lg font-bold items-center w-5/6">
                                         Log in
                                     </Button>
                                 </div>

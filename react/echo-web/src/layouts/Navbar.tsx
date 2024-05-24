@@ -4,9 +4,17 @@ import { Button } from '../components/Button';
 import { useState } from 'react';
 import { useSidebarContext } from '../contexts/SidebarContext';
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const Navbar = () => {
   const [showFullWidthSearch, setShowFullWidthSearch] = useState(false)
+  const token = localStorage.getItem("token");
+  let navigate = useNavigate();
+  const handleClick = () => {
+    if (token === null) {
+      navigate('/login');
+    }
+};
     return (
         <div className="dark:bg-gray-900 bg-white dark:text-white text-black">
         <div className="flex gap-10 lg:gap-20 justify-between pt-2 mb-6 mx-4">
@@ -29,7 +37,11 @@ const Navbar = () => {
               <Button size="icon" variant="ghost">
                 <Plus/>
               </Button>
-              <Button size="icon" variant="ghost">
+              <Button 
+              size="icon" 
+              variant="ghost"
+              onClick={handleClick}
+              >
                 <User2/>
               </Button>
             </div>

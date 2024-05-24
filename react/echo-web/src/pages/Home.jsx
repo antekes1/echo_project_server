@@ -1,21 +1,63 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Button } from '../components/Button';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, List } from 'lucide-react';
 import { Sidebar } from '../layouts/Sidebar';
 import { useSidebarContext } from '../contexts/SidebarContext';
+import { useNavigate } from 'react-router-dom';
 import useColorMode from '../hooks/useColorMode.jsx'
+import SERVER_URL from "../settings.jsx";
 
 const TRANSATE_AMOUNT = 200
 
 const Home = () => {
   const [colorMode, setColorMode] = useColorMode();
-  const categories = ["test storage", "my_sotraaddge", "my_sdadtrage", "my_sotfrage", "my_sotdarage", "my_swqotrage", "myffe_sotrage", "my_sotfaswrage", "my_sotragdafe", "my_s74hndotrage", "my_sotrai4ms8ge"];
+  const [categories, setCategories] = useState([]);
+  //const categories = ["test storage", "my_sotraaddge", "my_sdadtrage", "my_sotfrage", "my_sotdarage", "my_swqotrage", "myffe_sotrage", "my_sotfaswrage", "my_sotragdafe", "my_s74hndotrage", "my_sotrai4ms8ge"];
   const [selectedCategory, setSelectedCategory] = useState(categories[0])
   const [translate, setTransalte] = useState(0)
   const containerRef = useRef(null);
   const [isLeftVisable, setLeftVisable] = useState(false);
   const [isRightVisable, setRightVisable] = useState(false);
   const {toogle} = useSidebarContext()
+  const navigate = useNavigate();
+
+  const handletest = async (e) => {
+    e.preventDefault();
+    const token = localStorage.getItem("token");
+    console.log(token);
+  }
+
+  const storageButton = async (category) => {
+    setSelectedCategory(category[0]);
+    navigate(`/storage/${category[0]}`)
+  }
+
+  const get_storage_data = async () => {
+    const token = localStorage.getItem("token");
+    try {        
+        const response = await fetch(`${SERVER_URL}storage/${token}`, {
+          method: 'GET',
+        })
+
+        if (!response.ok) {
+            // Response is not OK, handle the error
+            const errorText = await response.text(); 
+            throw new Error(`Error ${response.status}: ${errorText}`);
+        }
+        const responseBody = await response.json();
+        if (responseBody.hasOwnProperty('storages')) {
+          setCategories(responseBody.storages)
+        }
+      } catch (error) {
+        alert(error);
+    }
+  };
+  
+
+  useEffect(() => {
+    console.log('useEffect triggered');
+    get_storage_data();
+  }, []);
 
   useEffect(() => {
     if (containerRef.current == null) return
@@ -36,13 +78,13 @@ const Home = () => {
     <div className="grid grid-cols-[auto,1fr] flex-grow-1 overflow-auto h-screen">
       <Sidebar/>
       <div className="overflow-x-hidden px-8 pb-4 dark:bg-gray-900">
-        <div className="sticky top-0 bg-white dark:bg-gray-900 z-1- pb-4 ">
+        <div className="sticky top-0 dark:text-white bg-white dark:bg-gray-900 z-1- pb-4 ">
           <div className="overflow-x-hidden relative" ref={containerRef}>
             <div className="flex whitespace-nowrap gap-3 transition-transform w-[max-content]" style={{transform: `translateX(-${translate}px)`}}>
               {categories.map(category => (
-                <Button onClick={() => setSelectedCategory(category)} key={category} variant={selectedCategory === category ? "ghost" : "transparent"} className="py-1 px-3 rounded-lg whitespace-nowrap text-white">
+                <Button onClick={() => storageButton(category)} key={category[0]} variant={selectedCategory === category[0] ? "ghost" : "transparent"} className="py-1 px-3 rounded-lg whitespace-nowrap text-white">
                   <div className="w-52 h-36 justify-center flex items-center bg-blue-600">
-                    {category}
+                    {category[1]}
                   </div>
                 </Button>
               ))}
@@ -78,6 +120,11 @@ const Home = () => {
               </Button>
             </div>
             )}
+          </div>
+          <div className="flex justify-center mt-6">
+            <Button onClick={handletest}>
+              heja to tylko test
+            </Button>
           </div>
         </div>
       </div>

@@ -211,6 +211,8 @@ async def updated_storage_users(db: db_dependency, request: ManageUsersStorages)
                         errors.append('User has not added yet')
                 else:
                     errors.append('User does not exist')
+    else:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="action do not exist")
     try:
         db.commit()
         if errors == []:
