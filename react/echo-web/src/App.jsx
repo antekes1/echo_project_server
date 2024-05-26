@@ -31,9 +31,9 @@ const App = () => {
             <Route exact path="/login" element={<LoginPage />} />
             <Route exact path="/register" element={<RegisterPage />} />
             <Route exact path="/profile" element={
-            <ProtectedRoute token={token}><ProfilePage /></ProtectedRoute>} />
+            <ProtectedRoute><ProfilePage /></ProtectedRoute>} />
             <Route exact path="/settings" element={<SettingsPage />} />
-            <Route path="/storage/:id" element={<ProtectedRoute token={token}><StoragePage /></ProtectedRoute>} />
+            <Route path="/storage/:id" element={<ProtectedRoute><StoragePage /></ProtectedRoute>} />
             <Route path="/storage_settings/:id" element={<ProtectedRoute token={token}><StorageSettingsPage /></ProtectedRoute>} />
         </Routes>
     </Router>
