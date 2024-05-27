@@ -1,10 +1,11 @@
 import logo from "../assets/images/logo.png";
 import { Menu, User2, Plus, Search, ArrowLeft } from "lucide-react"
 import { Button } from '../components/Button';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSidebarContext } from '../contexts/SidebarContext';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import SERVER_URL from "../settings";
 
 const Navbar = () => {
   const [showFullWidthSearch, setShowFullWidthSearch] = useState(false)
@@ -13,7 +14,7 @@ const Navbar = () => {
   const handleClick = () => {
     if (token === null) {
       navigate('/login');
-    }
+  }
 };
     return (
         <div className="dark:bg-gray-900 bg-white dark:text-white text-black">

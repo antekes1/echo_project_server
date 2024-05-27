@@ -1,14 +1,41 @@
 import { Home, UserCircle, Settings, ChevronDown, ChevronUp, HardDrive, Menu } from "lucide-react";
-import React, { ReactNode, useState } from "react";
+import React, { ReactNode, useState, useEffect } from "react";
 import { ElementType } from "react";
 import { Button, buttonStyles } from "../components/Button";
 import { twMerge } from "tailwind-merge";
 import { useSidebarContext } from "../contexts/SidebarContext";
 import { NavbarFirstSection } from "./Navbar";
+import SERVER_URL from "../settings";
 
 export function Sidebar() {
     const {toogle, isLargeOpen, isSmallOpen} = useSidebarContext()
-    const example_storages = [{id: "1", name: "Storage1"}, {id: "2", name: "Storage2"},{id: "3", name: "Storage3"},{id: "4", name: "Storage4"},]
+    // const example_storages = [{id: "1", name: "Storage1"}, {id: "2", name: "Storage2"},{id: "3", name: "Storage3"},{id: "4", name: "Storage4"},]
+    const [example_storages, setExample_storages] = useState([]);
+    const get_storage_data = async () => {
+        const token = localStorage.getItem("token");
+        try {        
+            const response = await fetch(`${SERVER_URL}storage/${token}`, {
+            method: 'GET',
+            })
+
+            if (!response.ok) {
+                // Response is not OK, handle the error
+                const errorText = await response.text(); 
+                throw new Error(`Error ${response.status}: ${errorText}`);
+            }
+            const responseBody = await response.json();
+            if (responseBody.hasOwnProperty('storages')) {
+            setExample_storages(responseBody.storages);
+            }
+        } catch (error) {
+            alert(error);
+        }
+    };
+
+    useEffect(() => {
+        console.log('useEffect triggered');
+        get_storage_data();
+    }, []);
     return (
         <>
         <aside className={`dark:bg-gray-900 bg-white sticky top-0 overflow-y-auto scrollbar-hidden pb-4 flex flex-col px-1 ${isLargeOpen ? "lg:hidden": "lg:flex"}`}>
@@ -31,7 +58,7 @@ export function Sidebar() {
             <hr/>
             <LargeSidebarSection title="Storages" visableItemCount={5}>
                 {example_storages.map(example_storages =>(
-                    <LargeSiderbarItem key={example_storages.id} Icon={HardDrive} title={example_storages.name} url={`/storage/${example_storages.id}`} />
+                    <LargeSiderbarItem key={example_storages[0]} Icon={HardDrive} title={example_storages[1]} url={`/storage/${example_storages[0]}`} />
                 ))}
             </LargeSidebarSection>
         </aside>

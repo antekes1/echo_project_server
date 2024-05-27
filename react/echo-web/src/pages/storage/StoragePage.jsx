@@ -13,7 +13,6 @@ import SERVER_URL from '../../settings.jsx';
 const StoragePage = () => {
     const { id } = useParams();
     const [colorMode, setColorMode] = useColorMode();
-    //const files = [{"type": "file", "name": "hej"}, {"type": "file", "name": "hej2"},  {"type": "folder", "name": "hej3"}]
     const [files, setFiles] = useState([]);
     const [newDir, setNewDri] = useState("");
     const [open1, setOpen1] = useState(false)
@@ -22,6 +21,7 @@ const StoragePage = () => {
     const [path, setPath] = useState("/");
     const token = localStorage.getItem('token');
     const [storageInfo, setStorageInfo] = useState({});
+    const fileInputRef = useRef(null);
     const deleteItem = async (type, name) => {
         try {
             const data = {
@@ -173,9 +173,46 @@ const StoragePage = () => {
             console.error('Error:', error);
         }
     };
+    const handleFileChange = async (event) => {
+        const file = event.target.files[0];
+        if (!file) {
+            alert('Please select a file');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('token', token);
+        formData.append('dir_path', path); // Aktualna ścieżka
+        formData.append('database_id', id);
+        formData.append('file', file);
+
+        try {
+            const response = await fetch(`${SERVER_URL}storage/upload_file`, {
+                method: 'POST',
+                body: formData,
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                console.log(data);
+                alert('File upload successful');
+                get_files(); // Odśwież listę plików po przesłaniu
+            } else {
+                const errorData = await response.json();
+                console.error(errorData);
+                alert('File upload failed: ' + errorData.detail);
+            }
+        } catch (error) {
+            console.error('Error uploading file:', error);
+            alert('Error uploading file');
+        }
+    };
+
+    const handleButtonClick = () => {
+        fileInputRef.current.click();
+    };
     useEffect(() => {
         get_storage_info();
-        get_files();
         console.log('useEffect triggered');
     }, []);
 
@@ -218,18 +255,18 @@ const StoragePage = () => {
     const goBackOneFolder = (path) => {
         if (typeof path !== 'string') return path;
         let pathParts = path.split('/');
-        if (pathParts.length > 1) {
+        while (pathParts.length > 0 && pathParts[pathParts.length - 1] === "") {
             pathParts.pop();
-            for (let i = pathParts.length - 1; i >= 0; i--) {
-                if (pathParts[i] !== "") {
-                    pathParts.pop();
-                } else {
-                    break;
-                }
-            }
         }
-        setPath(pathParts + "/");
-    };
+        if (pathParts.length > 0) {
+            pathParts.pop();
+        }
+        let newPath = pathParts.join('/');
+        if (!newPath.endsWith('/')) {
+            newPath += '/';
+        }
+        setPath(newPath);
+    };    
     
     return (
         <div className="grid grid-cols-[auto,1fr] flex-grow-1 overflow-auto h-screen">
@@ -241,8 +278,8 @@ const StoragePage = () => {
                             <div className="w-20 h-20 bg-gradient-to-tr from-violet-500 to-pink-500 rounded-full"/>
                         </div>
                         <div className="flex flex-col w-1/2 items-center">
-                            <h1>Test storage</h1>
-                            <p>0.00 of 25GB</p>
+                            <h1>{storageInfo.name}</h1>
+                            <p>{(storageInfo.actual_size / 1073741824).toFixed(4)}GB of {storageInfo.max_size}GB</p>
                         </div>
                     </div>
                     <div className="flex rounded-3xl border dark:border-white border-black items-center justify-center h-1/2 w-20">
@@ -314,7 +351,7 @@ const StoragePage = () => {
                                                 </div>
                                                 <div className="flex justify-center flex-row p-2">
                                                     <div className="flex items-center flex-col m-2">
-                                                        <Button size="icon" className="mb-1">
+                                                        <Button onClick={handleButtonClick} size="icon" className="mb-1">
                                                             <Upload />
                                                         </Button>
                                                         <h1>Upload file</h1>
@@ -352,6 +389,12 @@ const StoragePage = () => {
                         </Modal>
                     </div>
                 </div>
+                <input
+                    type="file"
+                    ref={fileInputRef}
+                    style={{ display: 'none' }}
+                    onChange={handleFileChange}
+                />
             </div>
         </div>
     );

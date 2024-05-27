@@ -1,4 +1,4 @@
-import { useParams } from 'react-router-dom';
+import { Navigate, useParams } from 'react-router-dom';
 import user from "../../assets/images/user.png"
 import React, { useEffect, useRef, useState } from 'react';
 import { Button } from '../../components/Button';
@@ -8,19 +8,85 @@ import { useSidebarContext } from '../../contexts/SidebarContext';
 import { useNavigate } from 'react-router-dom';
 import useColorMode from "../../hooks/useColorMode.jsx"
 import Modal from "../../components/Modal.jsx"
+import SERVER_URL from '../../settings.jsx';
     
 const StorageSettingsPage = () => {
     const { id } = useParams();
     const [colorMode, setColorMode] = useColorMode();
-    const current_users = ["antekes1"]
-    const files = [{"type": "file", "name": "hej"}, {"type": "file", "name": "hej2"}, {"type": "folder", "name": "hej3"}, {"type": "file", "name": "hej2"}, {"type": "folder", "name": "hej3"}]
+    //const current_users = ["antekes1"]
+    const [current_users, setCurrentUsers] = useState([]);
     const [name, setname] = useState('');
     const [descr, setDescr] = useState('');
     const [open1, setOpen1] = useState(false);
+    const [storageInfo, setStorageInfo] = useState({});
+    const navigate = useNavigate();
+    const token = localStorage.getItem('token');
     const handleSmallButtonClick = (event) => {
         event.stopPropagation();
         setOpen1(true);
     };
+    const get_current_users = async () => {
+        try {
+            const data = {
+                token: token,
+                storage_id: id,
+                action: "get_current_users",
+                updated_users_usernames: [],
+            };
+            const response = await fetch(`${SERVER_URL}storage/users`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
+            });
+    
+            if (!response.ok) {
+                // Response is not OK, handle the error
+                const errorText = await response.text(); 
+                console.error("Error Response:", errorText);
+                throw new Error(`Error ${response.status}: ${errorText}`);
+            }
+            const responseBody = await response.json();
+            setCurrentUsers(responseBody.current_users);
+        } catch (error) {
+            alert(error);
+        };
+    }
+    const get_storage_info = async () => {
+        try {
+            const data = {
+                token: token,
+                storage_id: id,
+            };
+            const response = await fetch(`${SERVER_URL}storage/info`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
+            });
+    
+            if (!response.ok) {
+                // Response is not OK, handle the error
+                const errorText = await response.text(); 
+                console.error("Error Response:", errorText);
+                throw new Error(`Error ${response.status}: ${errorText}`);
+            }
+            const responseBody = await response.json();
+            setStorageInfo(responseBody);
+            setname(responseBody.name);
+            setDescr(responseBody.description)
+            get_current_users();
+        } catch (error) {
+            alert(error);
+            navigate("/");
+        };
+    };
+    useEffect(() => {
+        get_storage_info();
+        console.log('useEffect triggered');
+    }, []);
     return (
         <div className="grid grid-cols-[auto,1fr] flex-grow-1 overflow-auto h-screen">
             <Sidebar />
@@ -31,8 +97,8 @@ const StorageSettingsPage = () => {
                             <div className="w-20 h-20 bg-gradient-to-tr from-violet-500 to-pink-500 rounded-full"/>
                         </div>
                         <div className="flex flex-col w-1/2 items-center">
-                            <h1>Test storage</h1>
-                            <p>0.00 of 25GB</p>
+                            <h1>{storageInfo.name}</h1>
+                            <p>{(storageInfo.actual_size / 1073741824).toFixed(4)}GB of {storageInfo.max_size}GB</p>
                         </div>
                     </div>
                 </div>
