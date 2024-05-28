@@ -197,6 +197,7 @@ const StoragePage = () => {
                 console.log(data);
                 alert('File upload successful');
                 get_files(); // Odśwież listę plików po przesłaniu
+                setOpen2(false)
             } else {
                 const errorData = await response.json();
                 console.error(errorData);

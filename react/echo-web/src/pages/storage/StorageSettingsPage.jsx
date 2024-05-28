@@ -13,11 +13,12 @@ import SERVER_URL from '../../settings.jsx';
 const StorageSettingsPage = () => {
     const { id } = useParams();
     const [colorMode, setColorMode] = useColorMode();
-    //const current_users = ["antekes1"]
     const [current_users, setCurrentUsers] = useState([]);
     const [name, setname] = useState('');
     const [descr, setDescr] = useState('');
+    const [newuser, setNewUser] = useState("");
     const [open1, setOpen1] = useState(false);
+    const [open2, setOpen2] = useState(false);
     const [storageInfo, setStorageInfo] = useState({});
     const navigate = useNavigate();
     const token = localStorage.getItem('token');
@@ -25,6 +26,38 @@ const StorageSettingsPage = () => {
         event.stopPropagation();
         setOpen1(true);
     };
+    const del_storagehandle_click = (event) => {
+        event.stopPropagation();
+        setOpen2(true);
+    };
+    const update_storage_info = async () => {
+        try{
+            const data = {
+                token: token,
+                storage_id: id,
+                name: name,
+                descr: descr
+            };
+            const response = await fetch(`${SERVER_URL}storage/update`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
+            });
+            if (!response.ok) {
+                // Response is not OK, handle the error
+                const errorText = await response.text(); 
+                console.error("Error Response:", errorText);
+                throw new Error(`Error ${response.status}: ${errorText}`);
+            }
+            const responseBody = await response.json();
+            alert(responseBody.msg);
+            get_storage_info();
+        } catch (error) {
+            alert(error);
+        };
+    }
     const get_current_users = async () => {
         try {
             const data = {
@@ -49,6 +82,35 @@ const StorageSettingsPage = () => {
             }
             const responseBody = await response.json();
             setCurrentUsers(responseBody.current_users);
+        } catch (error) {
+            alert(error);
+        };
+    }
+    const add_new_user = async () => {
+        try {
+            const data = {
+                token: token,
+                storage_id: id,
+                action: "add_users",
+                updated_users_usernames: [newuser],
+            };
+            const response = await fetch(`${SERVER_URL}storage/users`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
+            });
+    
+            if (!response.ok) {
+                // Response is not OK, handle the error
+                const errorText = await response.text(); 
+                console.error("Error Response:", errorText);
+                throw new Error(`Error ${response.status}: ${errorText}`);
+            }
+            const responseBody = await response.json();
+            alert(responseBody.msg);
+            get_current_users();
         } catch (error) {
             alert(error);
         };
@@ -83,6 +145,63 @@ const StorageSettingsPage = () => {
             navigate("/");
         };
     };
+    const del_storage_user = async (username) => {
+        try {
+            const data = {
+                token: token,
+                storage_id: id,
+                action: "remove_users",
+                updated_users_usernames: [username],
+            };
+            const response = await fetch(`${SERVER_URL}storage/users`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
+            });
+    
+            if (!response.ok) {
+                // Response is not OK, handle the error
+                const errorText = await response.text(); 
+                console.error("Error Response:", errorText);
+                throw new Error(`Error ${response.status}: ${errorText}`);
+            }
+            const responseBody = await response.json();
+            alert(responseBody.msg);
+            get_current_users();
+            setOpen1(false);
+        } catch (error) {
+            alert(error);
+        };
+    }
+    const del_storage = async () => {
+        try {
+            const data = {
+                token: token,
+                storage_id: id,
+            };
+            const response = await fetch(`${SERVER_URL}storage/delete_storage`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
+            });
+    
+            if (!response.ok) {
+                // Response is not OK, handle the error
+                const errorText = await response.text(); 
+                console.error("Error Response:", errorText);
+                throw new Error(`Error ${response.status}: ${errorText}`);
+            }
+            const responseBody = await response.json();
+            navigate("/");
+            alert(responseBody.msg);
+        } catch (error) {
+            alert(error);
+        };
+    }
     useEffect(() => {
         get_storage_info();
         console.log('useEffect triggered');
@@ -108,7 +227,7 @@ const StorageSettingsPage = () => {
                         <div className="p-2 felx-col items-center w-full mb-2">
                             <h1 className="felx text-lg mb-2">Change data: </h1>
                             <div className="flex flex-col justify-center">
-                                <div className="flex flex-col mb-2">
+                                <div className="flex flex-col mb-2" key={"name"}>
                                     <label className="font-bold mb-2">Storage name</label>
                                     <input 
                                     placeholder="name"
@@ -120,7 +239,7 @@ const StorageSettingsPage = () => {
                                     onChange={(e) => setname(e.target.value)}
                                     />
                                 </div>
-                                <div className="flex flex-col mb-2">
+                                <div className="flex flex-col mb-2" key={"descr"}>
                                     <label className="font-bold mb-2">Storage description</label>
                                     <input 
                                     placeholder="description"
@@ -132,7 +251,7 @@ const StorageSettingsPage = () => {
                                     onChange={(e) => setDescr(e.target.value)}
                                     />
                                 </div>
-                                <Button className="w-1/4 rounded-xl my-2">
+                                <Button onClick={update_storage_info} className="w-1/4 rounded-xl my-2">
                                     Update
                                 </Button>
                             </div>
@@ -145,14 +264,16 @@ const StorageSettingsPage = () => {
                                 <input
                                 placeholder="username"
                                 className="mr-8 w-1/2 rounded-xl dark:bg-slate-600 border-2 border-black dark:border-violet-900 p-1"
+                                value={newuser}
+                                onChange={(e) => setNewUser(e.target.value)}
                                 />
-                                <Button className="w-16" size="icon">
+                                <Button onClick={add_new_user} className="w-16" size="icon">
                                     <Plus /> Add
                                 </Button>
                             </div>
                             <div className="dark:bg-gray-800 rounded-2xl py-2 px-3 flex flex-col">
                                 {current_users.map(user => (
-                                    <div className="flex p-2 rounded-xl border flex-row justify-between w-full">
+                                    <div className="flex p-2 rounded-xl border flex-row justify-between w-full mb-2">
                                         {user}
                                         <div className="mr-2">
                                             <Button onClick={handleSmallButtonClick} size="icon" variant="transparent" className="p-1 h-6 w-8">
@@ -166,7 +287,7 @@ const StorageSettingsPage = () => {
                                                     <p className="text-sm text-gray-500">Are you sure to Continue</p>
                                                     </div>
                                                     <div className="flex gap-4">
-                                                    <Button onClick={() => {console.log(user)}} className="w-full">Continue</Button>
+                                                    <Button onClick={() => {del_storage_user(user)}} className="w-full">Continue</Button>
                                                     <Button onClick={() => setOpen1(false)} className="btn btn-light w-full" variant="ghost">Cancel</Button>
                                                     </div>
                                                 </div>
@@ -175,9 +296,22 @@ const StorageSettingsPage = () => {
                                     </div>  
                                 ))}
                             </div>
+                            <Modal open={open2} onClose={() => setOpen2(false)}>
+                            <div className="text-center w-56">
+                                <Trash2 className="mx-auto text-red-500" />
+                                <div className="mx-auto my-4 w-48">
+                                    <h3 className="text-lg font-black text-gray-800 dark:text-white">Confirm to Continue</h3>
+                                    <p className="text-sm text-gray-500">Are you sure to Continue</p>
+                                </div>
+                                <div className="flex gap-4">
+                                    <Button onClick={() => {del_storage()}} className="w-full">Continue</Button>
+                                    <Button onClick={() => setOpen2(false)} className="btn btn-light w-full" variant="ghost">Cancel</Button>
+                                </div>
+                            </div>
+                            </Modal>
                         </div>
                         <div className="flex p-2 felx-col w-full mb-2 justify-center">
-                            <Button className="rounded-lg w-1/4">
+                            <Button onClick={del_storagehandle_click} className="rounded-lg w-1/4">
                                 Delete this storage
                             </Button>
                         </div>
