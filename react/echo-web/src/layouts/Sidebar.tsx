@@ -13,22 +13,25 @@ export function Sidebar() {
     const [example_storages, setExample_storages] = useState([]);
     const get_storage_data = async () => {
         const token = localStorage.getItem("token");
-        try {        
-            const response = await fetch(`${SERVER_URL}storage/${token}`, {
-            method: 'GET',
-            })
-
-            if (!response.ok) {
-                // Response is not OK, handle the error
-                const errorText = await response.text(); 
-                throw new Error(`Error ${response.status}: ${errorText}`);
+        if (token === null) {
+        } else {
+            try {        
+                const response = await fetch(`${SERVER_URL}storage/${token}`, {
+                    method: 'GET',
+                })
+                
+                if (!response.ok) {
+                    // Response is not OK, handle the error
+                    const errorText = await response.text(); 
+                    throw new Error(`Error ${response.status}: ${errorText}`);
+                }
+                const responseBody = await response.json();
+                if (responseBody.hasOwnProperty('storages')) {
+                    setExample_storages(responseBody.storages);
+                }
+            } catch (error) {
+                alert(error);
             }
-            const responseBody = await response.json();
-            if (responseBody.hasOwnProperty('storages')) {
-            setExample_storages(responseBody.storages);
-            }
-        } catch (error) {
-            alert(error);
         }
     };
 

@@ -15,6 +15,7 @@ import SettingsPage from "./pages/SettingsPage";
 import StoragePage from "./pages/storage/StoragePage";
 import StorageSettingsPage from "./pages/storage/StorageSettingsPage";
 import ProtectedRoute from "./contexts/ProcetRouteContext.jsx";
+import CreateStoragePage from "./pages/storage/CreateStoragePage.jsx";
 
 const App = () => {
   const token = localStorage.getItem('token');
@@ -35,6 +36,7 @@ const App = () => {
             <Route exact path="/settings" element={<SettingsPage />} />
             <Route path="/storage/:id" element={<ProtectedRoute><StoragePage /></ProtectedRoute>} />
             <Route path="/storage_settings/:id" element={<ProtectedRoute token={token}><StorageSettingsPage /></ProtectedRoute>} />
+            <Route path="/create_storage/" element={<ProtectedRoute token={token}><CreateStoragePage /></ProtectedRoute>} />
         </Routes>
     </Router>
     </div>

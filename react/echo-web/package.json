@@ -10,6 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@headlessui/react": "^2.0.4",
+    "@headlessui/vue": "^1.7.22",
     "axios": "^1.6.8",
     "lucide-react": "^0.378.0",
     "qs": "^6.12.1",
