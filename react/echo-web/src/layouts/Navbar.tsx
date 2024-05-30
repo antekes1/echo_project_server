@@ -79,7 +79,7 @@ function DropdownMenu() {
   const del_token = () => {
     if (token != null) {
       localStorage.removeItem("token");
-      navigate("/");
+      navigate("/login");
   }}
   return (
   <Menu>

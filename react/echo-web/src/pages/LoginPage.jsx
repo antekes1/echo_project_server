@@ -28,7 +28,6 @@ const LoginPage = () => {
                 "username": username,
                 "password": password,
             }
-            console.log(data)
             var formBody = [];
             for (var property in data) {
               var encodedKey = encodeURIComponent(property);

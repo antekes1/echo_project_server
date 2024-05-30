@@ -50,6 +50,16 @@ const Home = () => {
         }
       } catch (error) {
         alert(error);
+        try {
+          const errorDetail = JSON.parse(error.message.split(': ')[1]).detail;
+          console.log(errorDetail)
+          if (errorDetail === "Token expired.") {
+            localStorage.removeItem("token");
+            navigate("/login")
+          }
+        } catch (jsonParseError) {
+          console.error("Error parsing JSON from error message:", jsonParseError);
+        }
     }
   };
   

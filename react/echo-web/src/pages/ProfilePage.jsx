@@ -16,6 +16,7 @@ const ProfilePage = () => {
     const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
     const token = localStorage.getItem("token");
+    const navigate = useNavigate();
     const get_user_data = async () => {
         try {        
             const response = await fetch(`${SERVER_URL}user/${token}`, {
@@ -34,6 +35,7 @@ const ProfilePage = () => {
             setEmail(responseBody.email)
           } catch (error) {
             alert(error);
+            navigate("/");
         }
     };
     const update_user_info = async () => {
