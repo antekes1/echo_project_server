@@ -1,4 +1,5 @@
 import logo from "../assets/images/logo.png";
+import logo_light from "../assets/images/logo_light.png";
 import { MenuIcon, User2, Plus, Search, ArrowLeft, Icon, TrashIcon, Settings, LogOut, User, Moon, MoonIcon, SunDimIcon, } from "lucide-react";
 import { Button } from '../components/Button';
 import { useState, useEffect } from 'react';
@@ -52,6 +53,7 @@ type NavbarFirstSectionProps = {
 }
 
 export function NavbarFirstSection({hidden = false}: NavbarFirstSectionProps) {
+  const [colorMode, setColorMode] = useColorMode();
   const {toogle} = useSidebarContext()
   return (
     <div className={`dark:text-white gap-4 items-center flex-shrink-0 ${hidden ? "hidden" : "flex" }`}>
@@ -59,7 +61,10 @@ export function NavbarFirstSection({hidden = false}: NavbarFirstSectionProps) {
         <MenuIcon />
       </Button>
       <a href='/'>
-        <img className='h-8' src={logo} alt='Echo' />
+        {colorMode === "light"?
+        <img className='h-8' src={logo_light} alt='Echo' />
+        :<img className='h-8' src={logo} alt='Echo' /> 
+        }
       </a>
     </div>
   )

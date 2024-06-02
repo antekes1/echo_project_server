@@ -91,6 +91,11 @@ const Home = () => {
         <div className="sticky top-0 dark:text-white bg-white dark:bg-gray-900 z-1- pb-4 ">
           <div className="overflow-x-hidden relative" ref={containerRef}>
             <div className="flex whitespace-nowrap gap-3 transition-transform w-[max-content]" style={{transform: `translateX(-${translate}px)`}}>
+              {categories.length === 0 ?
+              <div>
+                <h1>You have not storages</h1>
+              </div>
+              :undefined}
               {categories.map(category => (
                 <Button onClick={() => storageButton(category)} key={category[0]} variant={selectedCategory === category[0] ? "ghost" : "transparent"} className="py-1 px-3 rounded-lg whitespace-nowrap text-white">
                   <div className="w-52 h-36 justify-center flex items-center bg-blue-600">
@@ -132,9 +137,6 @@ const Home = () => {
             )}
           </div>
           <div className="flex justify-center mt-6">
-            <Button onClick={handletest}>
-              heja to tylko test
-            </Button>
           </div>
         </div>
       </div>

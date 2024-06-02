@@ -58,6 +58,12 @@ async def create_User(user_request: UserBase, db: db_dependency):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f'Verification code is incorrect')
     if code.expiry_at <= datetime.today():
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f'Code expired')
+    old_user = db.query(User).filter(models.User.email == user_request.email).first()
+    if old_user:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f'User with that email already exist')
+    old_user = db.query(User).filter(models.User.username == user_request.username).first()
+    if old_user:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f'User with that username already exist')
     #db_user = models.User(**user.dict(exclude='password'))
     exclude = ["password", "veryfication_code"]
     create_user_model = User(
