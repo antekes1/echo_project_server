@@ -1,7 +1,9 @@
 import os, time, datetime
 from importlib import import_module
 import importlib
-from fastapi import FastAPI, HTTPException, Depends, status
+from fastapi import FastAPI, HTTPException, Depends, status, Request
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 from fastapi.responses import HTMLResponse
 from typing import List, Annotated
@@ -33,7 +35,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.config = {"max_upload_size": "500.0 MB"}
+# app.config = {"max_upload_size": "500.0 MB"}
 
 for thing in routes_list:
     app.include_router(thing.router)
@@ -47,6 +49,24 @@ def get_db():
 
 db_dependency = Annotated[Session, Depends(get_db)]
 
+# Ensure all paths within the dist directory are correctly served
+# app.mount("/assets", StaticFiles(directory="../react/echo-web/dist/assets"), name="assets")
+# app.mount("/", StaticFiles(directory="../react/echo-web/dist"), name="app")
+
+# @app.get("/")
+# async def root():
+#     return FileResponse(os.path.join("dist", "index.html"))
+
+# @app.get("/{full_path:path}")
+# async def serve_react_app(full_path: str, request: Request):
+#     # Check if the path corresponds to an existing static file
+#     static_file_path = os.path.join("dist", full_path)
+#     if os.path.isfile(static_file_path):
+#         return FileResponse(static_file_path)
+    
+#     # Serve index.html for any path that does not correspond to a specific route
+#     return FileResponse(os.path.join("dist", "index.html"))
+
 # @app.get("/removing_expired")
 async def removing_expired():
     with Session(bind=engine) as session:
@@ -55,6 +75,7 @@ async def removing_expired():
                 if request.expiry_at <= datetime.datetime.today():
                     session.delete(request)
                     session.commit()
+
 @app.on_event("startup")
 async def startup_event():
     await removing_expired()

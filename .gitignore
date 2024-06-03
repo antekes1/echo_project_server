@@ -7,3 +7,4 @@ fastapi/files/
 venv/
 node_modules/
 .vscode/
+react/echo-web/.git/
