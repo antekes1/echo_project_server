@@ -29,7 +29,7 @@ const Home = () => {
 
   const storageButton = async (category) => {
     setSelectedCategory(category[0]);
-    navigate(`/storage/${category[0]}`)
+    navigate(`/storage_page/${category[0]}`)
   }
 
   const get_storage_data = async () => {

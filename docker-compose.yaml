@@ -2,12 +2,21 @@ version: '3'
 
 services:
   web_server:
-    build: .
+    build: ./fastapi/
     command: sh -c "uvicorn main:app --reload --port 5000"
     environment:
       - .env
     ports:
       - 5000:5000
+    volumes:
+      - .:/app
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+  web_app:
+    build: ./react/echo-web/
+    command: sh -c "npm run dev"
+    ports:
+      - 3000:3000
     volumes:
       - .:/app
     extra_hosts:

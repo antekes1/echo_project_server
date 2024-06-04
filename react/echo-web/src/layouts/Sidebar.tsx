@@ -61,7 +61,7 @@ export function Sidebar() {
             <hr/>
             <LargeSidebarSection title="Storages" visableItemCount={5}>
                 {example_storages.map(example_storages =>(
-                    <LargeSiderbarItem key={example_storages[0]} Icon={HardDrive} title={example_storages[1]} url={`/storage/${example_storages[0]}`} />
+                    <LargeSiderbarItem key={example_storages[0]} Icon={HardDrive} title={example_storages[1]} url={`storage_page/${example_storages[0]}`} />
                 ))}
             </LargeSidebarSection>
         </aside>

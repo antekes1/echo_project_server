@@ -50,22 +50,22 @@ def get_db():
 db_dependency = Annotated[Session, Depends(get_db)]
 
 # Ensure all paths within the dist directory are correctly served
-# app.mount("/assets", StaticFiles(directory="../react/echo-web/dist/assets"), name="assets")
-# app.mount("/", StaticFiles(directory="../react/echo-web/dist"), name="app")
+app.mount("/assets", StaticFiles(directory="../react/echo-web/dist/assets"), name="assets")
+app.mount("/app", StaticFiles(directory="../react/echo-web/dist"), name="app")
 
-# @app.get("/")
-# async def root():
-#     return FileResponse(os.path.join("dist", "index.html"))
+@app.get("/")
+async def root():
+    return FileResponse(os.path.join("../react/echo-web/dist", "index.html"))
 
-# @app.get("/{full_path:path}")
-# async def serve_react_app(full_path: str, request: Request):
-#     # Check if the path corresponds to an existing static file
-#     static_file_path = os.path.join("dist", full_path)
-#     if os.path.isfile(static_file_path):
-#         return FileResponse(static_file_path)
+@app.get("/{full_path:path}")
+async def serve_react_app(full_path: str, request: Request):
+    # Check if the path corresponds to an existing static file
+    static_file_path = os.path.join("dist", full_path)
+    if os.path.isfile(static_file_path):
+        return FileResponse(static_file_path)
     
-#     # Serve index.html for any path that does not correspond to a specific route
-#     return FileResponse(os.path.join("dist", "index.html"))
+    # Serve index.html for any path that does not correspond to a specific route
+    return FileResponse(os.path.join("../react/echo-web/dist", "index.html"))
 
 # @app.get("/removing_expired")
 async def removing_expired():
@@ -79,18 +79,18 @@ async def removing_expired():
 @app.on_event("startup")
 async def startup_event():
     await removing_expired()
-@app.get("/", response_class=HTMLResponse)
-def home():
-    return """
-    <html>
-        <head>
-            <title>echo server</title>
-        </head>
-        <body>
-            <h1>Hi welcome in echo project server =)</h1>
-        </body>
-    </html>
-    """
+# @app.get("/", response_class=HTMLResponse)
+# def home():
+#     return """
+#     <html>
+#         <head>
+#             <title>echo server</title>
+#         </head>
+#         <body>
+#             <h1>Hi welcome in echo project server =)</h1>
+#         </body>
+#     </html>
+#     """
 @app.get('/status')
 async def check_status():
     return 'online'

@@ -34,7 +34,7 @@ const App = () => {
             <Route exact path="/profile" element={
             <ProtectedRoute><ProfilePage /></ProtectedRoute>} />
             <Route exact path="/settings" element={<SettingsPage />} />
-            <Route path="/storage/:id" element={<ProtectedRoute><StoragePage /></ProtectedRoute>} />
+            <Route path="/storage_page/:id" element={<ProtectedRoute><StoragePage /></ProtectedRoute>} />
             <Route path="/storage_settings/:id" element={<ProtectedRoute token={token}><StorageSettingsPage /></ProtectedRoute>} />
             <Route path="/create_storage/" element={<ProtectedRoute token={token}><CreateStoragePage /></ProtectedRoute>} />
         </Routes>
