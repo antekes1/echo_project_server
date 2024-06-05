@@ -14,6 +14,7 @@ from schemas.user import UserBase
 from fastapi.middleware.cors import CORSMiddleware
 from pathlib import Path
 from fastapi.responses import FileResponse, StreamingResponse
+import httpx
 
 #import routes
 routes_list = []
@@ -91,18 +92,6 @@ async def startup_event():
 #         </body>
 #     </html>
 #     """
-@app.get('/status')
-async def check_status():
-    return 'online'
-
-@app.get('/photo/{filename}')
-def get_profile_photo(filename: str):
-    file_path = Path("static/photos") / filename
-    # return FileResponse(path=file_path, filename=filename, media_type='image/png')
-    file_stream = open(file_path, mode="rb")
-    
-    # Zwróć odpowiedź strumieniową
-    return StreamingResponse(file_stream, media_type="image/png")
 
 if __name__ == "__main__":
     import uvicorn
