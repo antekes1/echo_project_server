@@ -15,6 +15,7 @@ const ProfilePage = () => {
     const [name, setName] = useState("");
     const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
+    const [ver_code, setVerCode] = useState("");
     const token = localStorage.getItem("token");
     const navigate = useNavigate();
     const get_user_data = async () => {
@@ -39,7 +40,10 @@ const ProfilePage = () => {
         }
     };
     const update_user_info = async () => {
-        try {   
+        try {
+            if (email === "") {
+                setEmail("None");
+            }
             const data = {
                 token: token,
                 name: name,
@@ -73,7 +77,38 @@ const ProfilePage = () => {
             console.error("Catch Error:", error);
             alert(error);
         }
-    };    
+    };
+    const handleSendPin = async (e) => {
+        if (!email) {
+          alert('Please enter the email.');
+          e.preventDefault();
+        } else {
+            e.preventDefault();
+            try {
+                const data = {
+                    email: email
+                };
+                const response = await fetch(`${SERVER_URL}auth/create_verification_request`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data),
+                });
+        
+                if (!response.ok) {
+                    // Response is not OK, handle the error
+                    const errorText = await response.text(); 
+                    console.error("Error Response:", errorText);
+                    throw new Error(`Error ${response.status}: ${errorText}`);
+                }
+                const responseBody = await response.json();
+                alert(responseBody.msg);
+            } catch (error) {
+                alert(error);
+            };
+        }
+    };  
     useEffect(() => {
         console.log('useEffect triggered');
         get_user_data();
@@ -128,12 +163,28 @@ const ProfilePage = () => {
                                 <input id='email'
                                 name="email"
                                 type="email"
-                                required
                                 className="w-full border-2 border-gray-100 rounded-xl p-4 mt-1 bg-transparent hover:border-violet-400"
                                 placeholder="email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 />
+                            </div>
+                            <h1>If you want to change email you must verify it, if you don't just ignore this entry</h1>
+                            <div className="mb-2">
+                                <label className="text-lg font-medium">Veryfication code</label>
+                                <div className="flex flex-row">
+                                <input id='ver_code'
+                                name="ver_code"
+                                type="ver_code"
+                                className="w-1/2 border-2 border-gray-100 rounded-xl p-4 mt-1 bg-transparent hover:border-violet-400"
+                                placeholder="code"
+                                value={ver_code}
+                                onChange={(e) => setVerCode(e.target.value)}
+                                />
+                                <Button onClick={handleSendPin} className="ml-4 rounded-lg p-3">
+                                    Send code
+                                </Button>
+                                </div>
                             </div>
                             <div className="w-full flex items-center justify-center">
                             <button onClick={update_user_info} className="w-2/4 mt-4 py-2 px-4 rounded-full border border-blue-500 bg-violet-500 text-white hover:bg-violet-400 active:duration-75 active:scale-[.98] hover:scale-[1.01] font-bold">

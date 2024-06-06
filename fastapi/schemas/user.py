@@ -27,6 +27,7 @@ class ChangePassword(BaseModel):
 
 class updateUser(BaseModel):
     token: str
+    request_code: str = None
     name: str = None
     username: str = None
     email: str = None

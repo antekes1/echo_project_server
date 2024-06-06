@@ -94,10 +94,14 @@ async def create_verification_request(request: verification_request, db: db_depe
     pending_requests = db.query(Email_verify_requests).filter(models.Email_verify_requests.email == request.email).all()
     if len(pending_requests) > 2:
         raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail=f'You have to many verification request to this email.')
-    if not "@" and ".com" in request.email :
+    if not "@" and ".com" in request.email:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail=f'That is not valid email, please enter correct email')
-    code = ''.join(random.choices(string.ascii_letters + string.digits, k=8))
+    probaly_request = True
+    code = ""
+    while probaly_request != None:
+        code = ''.join(random.choices(string.ascii_letters + string.digits, k=8))
+        probaly_request = db.query(models.Email_verify_requests).filter(models.Email_verify_requests.code == code).first()
     db_verify_request = Email_verify_requests(email=request.email, code=code)
     db.add(db_verify_request)
     db.commit()
