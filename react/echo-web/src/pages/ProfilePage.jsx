@@ -49,6 +49,8 @@ const ProfilePage = () => {
                 name: name,
                 username: username,
                 email: email,
+                request_code: ver_code,
+
             };
     
             console.log("Request Data:", data);

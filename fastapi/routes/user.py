@@ -67,6 +67,7 @@ async def update_user(db: db_dependency, request: updateUser):
                 raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f'If you want to change email you must verify new one. Enter request_code.')
             verification_request = db.query(models.Email_verify_requests).filter(models.Email_verify_requests.code == request.request_code).first()
             if verification_request == None:
+                print(request.request_code)
                 raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f'Verification request not found, enter corret verification code')
             if verification_request.email != request.email:
                 raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f'Verification code or email is incorrect')
