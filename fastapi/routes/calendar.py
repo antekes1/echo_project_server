@@ -126,6 +126,7 @@ async def delete_event(db: db_dependency, request: GetEventBase):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Event does not exist")
     if user.id != event_to_del.owner_id and Perms().del_calendar_event not in InheritedPermissions().get_permissions(user.perm):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="You must be owner of calendar event to delete it")
+    # add deleting form guests calendars form owner panel and guest panel (edit) -> owner del -> participant
     db.delete(event_to_del)
     db.commit()
     return {"msg": "success"}
@@ -139,7 +140,7 @@ async def edit_event(db: db_dependency, request: EditEventBase):
         user = db.query(models.User).filter(models.User.id == id).first()
     if user is None:
         raise HTTPException(status_code=404, detail='User not found')
-    calendar = db.query(models.Calendar).filter(models.Calendar.owner_id == user.id).first()
+    calendar = db.query(models.Calendar).filter(models.downer_id == user.id).first()
     if calendar == None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Your calendar do not exist.")
     to_edit = db.query(models.Calendar_event).filter(models.Calendar_event.id == request.event_id).first()

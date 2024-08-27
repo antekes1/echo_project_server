@@ -21,6 +21,7 @@ from redis import Redis
 from database import engine, SeesionLocal
 from schemas.user import Token, UserBase, ChangePassword, verification_request, ResetPassBase
 
+
 redis_conn = Redis(host='localhost', port=6379)
 router = APIRouter(
     prefix='/auth',
@@ -75,9 +76,14 @@ async def create_User(user_request: UserBase, db: db_dependency):
     try:
         db.add(create_user_model)
         db.commit()
-        return {'msg': "succes"}
     except sqlalchemy.exc.IntegrityError as error:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f'Invalid data')
+    new_inbox = models.Inbox(
+        owner_id=create_user_model.id,
+    )
+    db.add(new_inbox)
+    db.commit()
+    return {'msg': "succes"}
 
 async def scheuld_delete(id: int, time: int):
     import asyncio

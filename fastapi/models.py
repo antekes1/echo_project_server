@@ -7,6 +7,7 @@ from datetime import datetime,timedelta
 perms = ['user', 'admin', 'owner']
 
 notification_types = ["text", "request"]
+requests_types = ["storage_request", "friend_request", "calendar_event_request"]
 
 # Tabela łącząca (association table)
 item_user_association_table = Table(
@@ -95,3 +96,13 @@ class Notifications(Base):
     type = Column(Enum(*notification_types), default='text')
     request_id = Column(Integer, nullable=True)
     body = Column(String(250), nullable=False, unique=False)
+    creation_date = Column(DateTime, default=datetime.utcnow(), nullable=False)
+
+class Request(Base):
+    __tablename__ = "requests"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, nullable=True) #owner
+    type = Column(Enum(*requests_types))
+    storage_id = Column(Integer, nullable=True)
+    event_id = Column(Integer, nullable=True)
+    friend_id = Column(Integer, nullable=True)
