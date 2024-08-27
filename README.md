@@ -14,10 +14,10 @@ This project is published under the [GNU General Public License](https://github.
 You can use code from this project as long as you disclose the source of your work. For more details, view LICENSE.
 
 # Features
-- web ui
+- Web ui
 - User registration & login
 - Uploading and downloading files form storage
-- managing storages, sharing storage
+- Managing storages, sharing storage
 
 # In Development / Planned
 
