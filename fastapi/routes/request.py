@@ -13,6 +13,7 @@ from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from settings import secret_key_token, algorithm
 from .auth import get_current_user, bcrypt_context
 from schemas.request import requestAction
+from sqlalchemy.orm.attributes import flag_modified
 
 router = APIRouter(
     prefix='/api/request',
@@ -54,9 +55,28 @@ async def request_action(db: db_dependency, request: requestAction):
                 raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="This storage does not exist")
             storage.valid_users.append(user)
         elif req.type == "friend_request":
-            pass
+            friend_to_add = db.query(models.User).filter(models.User.id == req.friend_id).first()
+            if friend_to_add is None:
+                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="This user does not exist")
+            print(friend_to_add.id)
+            if user.friends is None:
+                user.friends = []
+            if friend_to_add.friends is None:
+                friend_to_add.friends = []
+            user.friends.append(friend_to_add.id)
+            friend_to_add.friends.append(user.id)
+            flag_modified(user, "friends")
+            flag_modified(friend_to_add, "friends")
         elif req.type == "calendar_event_request":
-            pass
+            # create_event.calendar.append(calendar)
+            event_to_add = db.query(models.Calendar_event).filter(models.Calendar_event.id == req.event_id).first()
+            if event_to_add is None:
+                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="That event does not exist")
+            user_calendar = db.query(models.Calendar).filter(models.Calendar.owner_id == req.user_id).first()
+            if user_calendar is None:
+                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Your calendar does not exist")
+            event_to_add.calendar.append(user_calendar)
+            db.commit()
         else:
             print("error")
         db.delete(req)

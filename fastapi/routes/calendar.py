@@ -24,6 +24,7 @@ from settings import storages_path, archives_files_path
 from utils.permissions import InheritedPermissions, Perms
 from schemas.storage import CreateDatabaseBase, FilesBase, GetFileBase, updateStorage, ManageUsersStorages, StorageInfo, DelStorageBase
 from .auth import get_current_user
+from .modules import create_request
 
 redis_conn = Redis(host='localhost', port=6379)
 router = APIRouter(
@@ -80,12 +81,12 @@ async def add_event(db: db_dependency, request: CreateEventBase):
     if calendar == None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Your calendar do not exist.")
     users = []
-    for user in request.participants:
-        searched_user = db.query(models.User).filter(models.User.name == user).first()
+    for user_ in request.participants:
+        searched_user = db.query(models.User).filter(models.User.username == user_).first()
         if searched_user != None:
             users.append(searched_user.id)
         else:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f'User {user} do not exist')
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f'User {user_} do not exist')
     print(users)
     dates = request.date
     converted_dates = [datetime.strptime(date, '%d.%m.%Y').strftime('%Y-%m-%d') for date in dates]
@@ -106,6 +107,11 @@ async def add_event(db: db_dependency, request: CreateEventBase):
     db.add(create_event)
     db.commit()
     create_event.calendar.append(calendar)
+    for user_to_add in users:
+        user_to_add = db.query(models.User).filter(models.User.id == user_to_add).first()
+        calendar2 = db.query(models.Calendar).filter(models.Calendar.owner_id == user_to_add.id).first()
+        data = await create_request(db, type="calendar_event_request", event_id=create_event.id, storage_id=0, user_id=user_to_add.id, friend_id=0)
+        db.add(data["request"])
     db.commit()
     return {"msg": "success"}
 
@@ -140,7 +146,7 @@ async def edit_event(db: db_dependency, request: EditEventBase):
         user = db.query(models.User).filter(models.User.id == id).first()
     if user is None:
         raise HTTPException(status_code=404, detail='User not found')
-    calendar = db.query(models.Calendar).filter(models.downer_id == user.id).first()
+    calendar = db.query(models.Calendar).filter(models.Calendar.owner_id == user.id).first()
     if calendar == None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Your calendar do not exist.")
     to_edit = db.query(models.Calendar_event).filter(models.Calendar_event.id == request.event_id).first()
@@ -148,21 +154,44 @@ async def edit_event(db: db_dependency, request: EditEventBase):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="This event does not exist")
     if to_edit.owner_id != user.id and Perms().full_perm not in InheritedPermissions().get_permissions(user.perm):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="You must be owner of this event to edit.")
+    old_users = to_edit.participants
     users = []
     for user in request.participants:
-        searched_user = db.query(models.User).filter(models.User.name == user).first()
+        searched_user = db.query(models.User).filter(models.User.username == user).first()
         if searched_user != None:
             users.append(searched_user.id)
         else:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f'User {user} do not exist')
-    print(users)
     dates = request.date
     converted_dates = [datetime.strptime(date, '%d.%m.%Y').strftime('%Y-%m-%d') for date in dates]
+    print(users)
+    suma = old_users + users
     to_edit.name = request.name
     to_edit.description = request.description
     to_edit.date = converted_dates
     to_edit.color = request.color
-    to_edit.participants = users,
+    to_edit.participants = users
+
+    def subtract_lists(list1, list2):
+        return [item for item in list1 if item not in list2]
+
+    users_to_add = subtract_lists(suma, old_users)
+    users_to_del = subtract_lists(suma, users)
+    print(users_to_add, users_to_del)
+    for user_to_add in users_to_add:
+        user_to_add = db.query(models.User).filter(models.User.id == user_to_add).first()
+        calendar2 = db.query(models.Calendar).filter(models.Calendar.owner_id == user_to_add.id).first()
+        data = await create_request(db, type="calendar_event_request", event_id=to_edit.id, storage_id=0, user_id=user_to_add.id, friend_id=0)
+        db.add(data["request"])
+    for user_to_del in users_to_del:
+        user_to_del = db.query(models.User).filter(models.User.id == users_to_del).first()
+        calendar2 = db.query(models.Calendar).filter(models.Calendar.owner_id == user_to_del.id).first()
+        if calendar != None:
+            if calendar2 in to_edit.calendar:
+                to_edit.calendar.remove(calendar2)
+            else:
+                req_to_del = db.query(models.Request).filter(models.Request.event_id == to_edit.id and models.Request.user_id == user_to_del.id).first()
+                db.delete(req_to_del)
     db.commit()
     return {"msg": "success"}
 
@@ -188,7 +217,7 @@ async def get_events(db: db_dependency, request: GetEventsBase):
                 month_events[event_date] = event.id
     return {"msg": "success", "data": month_events}
 
-@router.post("/get_event", status_code=status.HTTP_200_OK)
+@router.post("/get_event_detail", status_code=status.HTTP_200_OK)
 async def get_event_detail(db: db_dependency, request: GetEventBase):
     data = await get_current_user(token=request.token, db=db)
     if 'username' in data:

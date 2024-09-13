@@ -31,3 +31,7 @@ class updateUser(BaseModel):
     name: str = None
     username: str = None
     email: str = None
+
+class addFriend(BaseModel):
+    token: str
+    username: str

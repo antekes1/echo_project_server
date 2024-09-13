@@ -26,6 +26,12 @@ association_table3 = Table(
     Column('inbox_id', Integer, ForeignKey('inboxes.id')),
     Column('notification_id', Integer, ForeignKey('notifications.id'))
 )
+association_table4 = Table(
+    'chatroms_messages_association', Base.metadata,
+    Column('room_id', Integer, ForeignKey('chat_rooms.id')),
+    Column('message_id', Integer, ForeignKey('messages.id'))
+)
+
 
 # item_user_association_table2 = Table(
 #     'item_user_association2', Base.metadata,
@@ -44,6 +50,7 @@ class User(Base):
     perm = Column(Enum(*perms), default='user')
     security_char = Column(String(24))
     profile_photo = Column(String(200), unique=False, default='user.png', nullable=False)
+    friends = Column(JSON, nullable=False, default=[])
 
 class Storage(Base):
     __tablename__='storages'
@@ -106,3 +113,17 @@ class Request(Base):
     storage_id = Column(Integer, nullable=True)
     event_id = Column(Integer, nullable=True)
     friend_id = Column(Integer, nullable=True)
+
+class Chatroom(Base):
+    __tablename__ = "chat_rooms"
+    id = Column(Integer, primary_key=True, index=True)
+    participants = Column(JSON, nullable=True)
+    messages = relationship("Message", secondary=association_table4)
+    creation_date = Column(DateTime, default=datetime.utcnow(), nullable=False)
+    description = Column(String(300), nullable=True, unique=False)
+
+class Message(Base):
+    __tablename__ = "messages"
+    id = Column(Integer, primary_key=True, index=True)
+    sender_id = Column(Integer, nullable=False) # user_id
+    content_text = Column(String(100), nullable=False, unique=False)

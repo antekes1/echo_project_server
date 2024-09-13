@@ -19,6 +19,7 @@ from settings import storages_path, archives_files_path
 from utils.permissions import InheritedPermissions, Perms
 from schemas.storage import CreateDatabaseBase, FilesBase, GetFileBase, updateStorage, ManageUsersStorages, StorageInfo, DelStorageBase
 from .auth import get_current_user
+from .modules import create_request
 
 
 router = APIRouter(
@@ -188,7 +189,13 @@ async def updated_storage_users(db: db_dependency, request: ManageUsersStorages)
                 if user_toadd != None:
                     if user_toadd != storage.owner_id:
                         if not user_toadd in storage.valid_users:
-                            storage.valid_users.append(user_toadd)
+                            # storage.valid_users.append(user_toadd)
+                            #request
+                            print(storage.id)
+                            request_data = await create_request(db, type="storage_request", user_id=user_toadd.id,
+                                                                storage_id=storage.id, event_id=0, friend_id=0)
+                            if request_data["msg"] == "success":
+                                db.add(request_data["request"])
                         else:
                             errors.append('User is already added')
                 else:

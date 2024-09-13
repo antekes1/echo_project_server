@@ -10,8 +10,9 @@ from starlette import status
 from database import SeesionLocal
 from pathlib import Path
 
-from schemas.user import Token, UserBase, updateUser
+from schemas.user import Token, UserBase, updateUser, addFriend
 from .auth import get_current_user
+from .modules import create_request
 
 router = APIRouter(
     prefix='/user',
@@ -84,3 +85,22 @@ async def update_user(db: db_dependency, request: updateUser):
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f'Invalid data')
     else:
         raise HTTPException(status_code=404, detail='User not found')
+
+@router.post("/add_friend", status_code=status.HTTP_200_OK)
+async def add_friend(db: db_dependency, request: addFriend):
+    data = await get_current_user(token=request.token, db=db)
+    if 'username' in data:
+        username = data['username']
+        id = data['id']
+        user = db.query(models.User).filter(models.User.id == id).first()
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid token")
+    user_to_add = db.query(models.User).filter(models.User.username == request.username).first()
+    if user_to_add is None:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User to add does not exist")
+    #create request
+    request_data = await create_request(db, type="friend_request", user_id=user_to_add.id, storage_id=0, event_id=0, friend_id=user.id)
+    if request_data["msg"] == "success":
+        db.add(request_data["request"])
+        db.commit()
+    return {"msg": "success"}
