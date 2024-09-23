@@ -87,4 +87,4 @@ async def create_request(db, type,  user_id, storage_id, event_id, friend_id):
         # add notification for user
         body = f'You have a new request.'
         notify = await create_notification(db=db, type="request", user_id=user.id, request_id=new_request.id, body=body)
-        return {"msg": "success", "request": new_request} #add notificatons in parent
+        return {"msg": "success", "request": new_request} #add notificatons in parentr
