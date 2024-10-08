@@ -16,7 +16,7 @@ from schemas.request import requestAction
 from sqlalchemy.orm.attributes import flag_modified
 
 router = APIRouter(
-    prefix='/api/request',
+    prefix='/api-request',
     tags=['request'],
     include_in_schema=True
 )

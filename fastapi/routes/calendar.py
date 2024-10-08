@@ -24,7 +24,7 @@ from settings import storages_path, archives_files_path
 from utils.permissions import InheritedPermissions, Perms
 from schemas.storage import CreateDatabaseBase, FilesBase, GetFileBase, updateStorage, ManageUsersStorages, StorageInfo, DelStorageBase
 from .auth import get_current_user
-from .modules import create_request
+from .modules import create_request, create_notification
 
 redis_conn = Redis(host='localhost', port=6379)
 router = APIRouter(
@@ -112,6 +112,9 @@ async def add_event(db: db_dependency, request: CreateEventBase):
         calendar2 = db.query(models.Calendar).filter(models.Calendar.owner_id == user_to_add.id).first()
         data = await create_request(db, type="calendar_event_request", event_id=create_event.id, storage_id=0, user_id=user_to_add.id, friend_id=0)
         db.add(data["request"])
+        db.commit()
+        notify = await create_notification(db=db, type="request", user_id=user.id, request_id=data["request"].id, body="You have a new request")
+        db.add(notify)
     db.commit()
     return {"msg": "success"}
 
@@ -183,6 +186,10 @@ async def edit_event(db: db_dependency, request: EditEventBase):
         calendar2 = db.query(models.Calendar).filter(models.Calendar.owner_id == user_to_add.id).first()
         data = await create_request(db, type="calendar_event_request", event_id=to_edit.id, storage_id=0, user_id=user_to_add.id, friend_id=0)
         db.add(data["request"])
+        db.commit()
+        notify = await create_notification(db=db, type="request", user_id=user.id, request_id=data["request"].id,
+                                           body="You have a new request")
+        db.add(notify)
     for user_to_del in users_to_del:
         user_to_del = db.query(models.User).filter(models.User.id == users_to_del).first()
         calendar2 = db.query(models.Calendar).filter(models.Calendar.owner_id == user_to_del.id).first()

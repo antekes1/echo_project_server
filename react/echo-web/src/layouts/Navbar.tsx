@@ -1,6 +1,6 @@
 import logo from "../assets/images/logo.png";
 import logo_light from "../assets/images/logo_light.png";
-import { MenuIcon, User2, Plus, Search, ArrowLeft, Icon, TrashIcon, Settings, LogOut, User, Moon, MoonIcon, SunDimIcon, } from "lucide-react";
+import { MenuIcon, User2, Plus, Search, ArrowLeft, Bell, Icon, TrashIcon, Settings, LogOut, User, Moon, MoonIcon, SunDimIcon, ArrowUpFromLine, Check, Trash2, Megaphone, Users } from "lucide-react";
 import { Button } from '../components/Button';
 import { useState, useEffect } from 'react';
 import { useSidebarContext } from '../contexts/SidebarContext';
@@ -38,6 +38,7 @@ const Navbar = () => {
               <Button size="icon" variant="ghost" className='md:hidden' onClick={() => setShowFullWidthSearch(true)}>
                 <Search/>
               </Button>
+              <NotificationsMenu />
               <Button onClick={() => {navigate("/create_storage/")}} size="icon" variant="ghost">
                 <Plus/>
               </Button>
@@ -106,7 +107,7 @@ function DropdownMenu() {
   >
     <MenuItems
       anchor="bottom end"
-      className="w-52 bg-zinc-200 origin-top-right rounded-xl border border-white/5 dark:bg-white/5 p-1 text-sm/6 dark:text-white text-black [--anchor-gap:var(--spacing-1)] focus:outline-none"
+      className="w-52 bg-zinc-200 origin-top-right rounded-xl border border-white/5 dark:bg-slate-700 p-1 text-sm/6 dark:text-white text-black [--anchor-gap:var(--spacing-1)] focus:outline-none"
     > 
       <MenuItem>
         <button onClick={handleClick} className="group flex h-16 w-full justify-center items-center gap-2 rounded-lg py-1.5 px-3 dark:data-[focus]:bg-white/10 data-[focus]:bg-slate-800/10 mb-1">
@@ -134,6 +135,13 @@ function DropdownMenu() {
         {/* <kbd className="ml-auto hidden font-sans text-xs text-white/50 group-data-[focus]:inline">⌘D</kbd> */}
       </button>
       <MenuItem>
+        <button onClick={() => {navigate("/friends")}} className="group flex w-full items-center gap-2 rounded-lg py-1.5 px-3 dark:data-[focus]:bg-white/10 data-[focus]:bg-slate-800/10">
+          <Users className="size-5 fill-white/30" />
+          Friends
+          {/* <kbd className="ml-auto hidden font-sans text-xs text-white/50 group-data-[focus]:inline">⌘D</kbd> */}
+        </button>
+      </MenuItem>
+      <MenuItem>
         <button onClick={() => {navigate("/settings")}} className="group flex w-full items-center gap-2 rounded-lg py-1.5 px-3 dark:data-[focus]:bg-white/10 data-[focus]:bg-slate-800/10">
           <Settings className="size-5 fill-white/30" />
           Settings
@@ -152,6 +160,99 @@ function DropdownMenu() {
           </button>
         </MenuItem>
       }
+    </MenuItems>
+  </Transition>
+</Menu>
+)
+}
+
+function NotificationsMenu() {
+  const token = localStorage.getItem("token");
+  const [colorMode, setColorMode] = useColorMode();
+  let navigate = useNavigate();
+  const [notifications, setNotifications] = useState([]);
+  const get_storage_data = async () => {
+    const token = localStorage.getItem("token");
+    if (token === null) {
+    } else {
+        try {
+          const response = await fetch(`${SERVER_URL}api/notifications/get_notifications/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({token}),
+        });
+            
+          if (!response.ok) {
+              const responseBody = await response.json();
+              console.log(responseBody.data);
+              setNotifications(responseBody.data);
+          }
+        } catch (error) {
+          alert(error);
+        }
+    }
+  };
+
+  useEffect(() => {
+    get_storage_data();
+  }, []);
+
+  // Usuwanie notyfikacji
+  const deleteNotification = (id) => {
+    setNotifications(notifications.filter(notification => notification.id !== id));
+    // Tu możesz dodać żądanie do serwera, aby usunąć notyfikację
+  };
+
+  return (
+  <Menu>
+  <MenuButton>
+  <Button 
+  size="icon" 
+  variant="ghost"
+  >
+    <Bell/>
+  </Button>
+  </MenuButton>
+  <Transition
+    enter="transition ease-out duration-75"
+    enterFrom="opacity-0 scale-95"
+    enterTo="opacity-100 scale-100"
+    leave="transition ease-in duration-100"
+    leaveFrom="opacity-100 scale-100"
+    leaveTo="opacity-0 scale-95"
+  >
+    <MenuItems
+      anchor="bottom end"
+      className="w-72 bg-zinc-200 origin-top-right rounded-xl border border-white/5 dark:bg-slate-700 p-1 text-sm/6 dark:text-white text-black [--anchor-gap:var(--spacing-1)] focus:outline-none"
+    > 
+    <div className="p-1">
+      <h1 className="m-1 mb-3 text-2xl">Notifications</h1>
+      <div className="border rounded-lg p-2 flex-row flex justify-between items-center my-2">
+        <Megaphone />
+        <div className="ml-1">
+          Bodyaa
+        </div>
+        <Button className="ml-2" variant="ghost" size="icon">
+          <Trash2 />
+        </Button>
+      </div>
+      <div className="border rounded-lg p-2 flex-row flex justify-between items-center my-2">
+        <ArrowUpFromLine />
+        <div className="ml-1 flex w-32 justify-center">
+          You have a new request
+        </div>
+        <div className="flex flex-row">
+        <Button className="" variant="ghost" size="icon">
+          <Trash2 />
+        </Button>
+        <Button className="" variant="ghost" size="icon">
+          <Check />
+        </Button>
+        </div>
+      </div>
+    </div>
     </MenuItems>
   </Transition>
 </Menu>

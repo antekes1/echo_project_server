@@ -81,10 +81,9 @@ async def create_request(db, type,  user_id, storage_id, event_id, friend_id):
         models.Request.user_id == user.id,
         getattr(models.Request, to_check) == value_to_check
     ).first()
+
     if existing_request:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Event request already exists")
     else:
         # add notification for user
-        body = f'You have a new request.'
-        notify = await create_notification(db=db, type="request", user_id=user.id, request_id=new_request.id, body=body)
-        return {"msg": "success", "request": new_request} #add notificatons in parentr
+        return {"msg": "success", "request": new_request} #add notificatons in parentrs

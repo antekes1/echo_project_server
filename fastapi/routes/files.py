@@ -19,7 +19,7 @@ from settings import storages_path, archives_files_path
 from utils.permissions import InheritedPermissions, Perms
 from schemas.storage import CreateDatabaseBase, FilesBase, GetFileBase, updateStorage, ManageUsersStorages, StorageInfo, DelStorageBase
 from .auth import get_current_user
-from .modules import create_request
+from .modules import create_request, create_notification
 
 
 router = APIRouter(
@@ -196,6 +196,11 @@ async def updated_storage_users(db: db_dependency, request: ManageUsersStorages)
                                                                 storage_id=storage.id, event_id=0, friend_id=0)
                             if request_data["msg"] == "success":
                                 db.add(request_data["request"])
+                                db.commit()
+                                notify = await create_notification(db=db, type="request", user_id=user.id,
+                                                                   request_id=data["request"].id,
+                                                                   body="You have a new request")
+                                db.add(notify)
                         else:
                             errors.append('User is already added')
                 else:

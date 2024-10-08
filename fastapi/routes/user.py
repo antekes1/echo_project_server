@@ -12,7 +12,7 @@ from pathlib import Path
 
 from schemas.user import Token, UserBase, updateUser, addFriend
 from .auth import get_current_user
-from .modules import create_request
+from .modules import create_request, create_notification
 
 router = APIRouter(
     prefix='/user',
@@ -102,5 +102,10 @@ async def add_friend(db: db_dependency, request: addFriend):
     request_data = await create_request(db, type="friend_request", user_id=user_to_add.id, storage_id=0, event_id=0, friend_id=user.id)
     if request_data["msg"] == "success":
         db.add(request_data["request"])
+        db.commit()
+        print(request_data["request"].id)
+        notify = await create_notification(db=db, type="request", user_id=user.id, request_id=request_data["request"].id,
+                                           body="You have a new request")
+        db.add(notify)
         db.commit()
     return {"msg": "success"}

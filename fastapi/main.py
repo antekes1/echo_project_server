@@ -64,7 +64,7 @@ async def serve_react_app(full_path: str, request: Request):
     static_file_path = os.path.join("dist", full_path)
     if os.path.isfile(static_file_path):
         return FileResponse(static_file_path)
-    
+
     # Serve index.html for any path that does not correspond to a specific route
     return FileResponse(os.path.join("../react/echo-web/dist", "index.html"))
 

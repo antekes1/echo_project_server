@@ -15,9 +15,8 @@ from .auth import get_current_user, bcrypt_context
 from schemas.notification import DelNoti, GetNotifications
 
 router = APIRouter(
-    prefix='/api/notifications',
-    tags=['notifications'],
-    include_in_schema=True
+    prefix='/notifications-api',
+    tags=['notifications']
 )
 
 def get_db():
@@ -88,5 +87,5 @@ async def get_notfications(db: db_dependency, request: GetNotifications):
     notifications = db.query(models.Notifications).filter(models.Notifications.inbox.any(id=inbox.id)).all()
     data = []
     for notification in notifications:
-        data.append({"data": notification.creation_date, "body": notification.body, "type": notification.type, "request_id": notification.type})
+        data.append({"data": notification.creation_date, "body": notification.body, "type": notification.type, "request_id": notification.request_id})
     return {"msg":"success", "data": data}

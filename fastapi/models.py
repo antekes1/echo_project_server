@@ -101,7 +101,7 @@ class Notifications(Base):
     id = Column(Integer, primary_key=True, index=True)
     inbox = relationship("Inbox", secondary=association_table3)
     type = Column(Enum(*notification_types), default='text')
-    request_id = Column(Integer, nullable=True)
+    request_id = Column(Integer, nullable=False)
     body = Column(String(250), nullable=False, unique=False)
     creation_date = Column(DateTime, default=datetime.utcnow(), nullable=False)
 
