@@ -1,15 +1,18 @@
 import user from "../assets/images/user.png"
 import React, { useEffect, useRef, useState } from 'react';
 import { Button } from '../components/Button';
-import { ContactRound, Search, UserMinus, UserPlus } from 'lucide-react';
+import { ContactRound, Search, UserMinus, UserPlus, Check } from 'lucide-react';
 import { Sidebar } from '../layouts/Sidebar';
 import { useSidebarContext } from '../contexts/SidebarContext';
 import { useNavigate } from 'react-router-dom';
 import useColorMode from '../hooks/useColorMode.jsx'
 import SERVER_URL from "../settings.jsx";
+import Toast from "../components/liveToast.jsx";
 
 const FriendsPage = () => {
     const [colorMode, setColorMode] = useColorMode();
+    const [showTost, setShowTost] = useState(false);
+    const [toastContent, setToastContent] = useState({ title: "", body: ""});
     const [userdata, setUserData] = useState({});
     const [searchTerm, setSearchTerm] = useState("");
     const [showResults, setShowResults] = useState(false);
@@ -21,6 +24,14 @@ const FriendsPage = () => {
 
     const handleInputChange = (e) => {
         setSearchTerm(e.target.value);
+    };
+
+    const handleShowToast = (title, body, icon = null) => {
+        setToastContent({ title, body, icon });
+        setShowTost(true);
+        setTimeout(() => {
+          setShowTost(false);
+        }, 7000); // Auto-close the toast after 3 seconds
     };
 
     // Funkcja do pokazania wyników po kliknięciu przycisku
@@ -99,7 +110,7 @@ const FriendsPage = () => {
                 const responseBody = await response.json();
 
                 if (responseBody["msg"] === "success") {
-                    alert("request sent succesfully")
+                    handleShowToast("success", "Friend request sent succesfully", <Check className="text-green-600" />);
                 }
             } catch (error) {
                 alert(error);
@@ -217,6 +228,16 @@ const FriendsPage = () => {
                                 </div>
                             </div> */}
                         </div>
+                    </div>
+                    <div className="relative">
+                    {showTost && (
+                        <Toast
+                        title={toastContent.title} 
+                        body={toastContent.body} 
+                        setShowToast={setShowTost}
+                        icon={toastContent.icon}
+                    />
+                    )}
                     </div>
                     </div>
                 </div>
