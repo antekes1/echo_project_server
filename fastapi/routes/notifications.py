@@ -87,5 +87,5 @@ async def get_notfications(db: db_dependency, request: GetNotifications):
     notifications = db.query(models.Notifications).filter(models.Notifications.inbox.any(id=inbox.id)).all()
     data = []
     for notification in notifications:
-        data.append({"data": notification.creation_date, "body": notification.body, "type": notification.type, "request_id": notification.request_id})
+        data.append({"id": notification.id ,"data": notification.creation_date, "body": notification.body, "type": notification.type, "request_id": notification.request_id})
     return {"msg":"success", "data": data}

@@ -171,23 +171,26 @@ function NotificationsMenu() {
   const [colorMode, setColorMode] = useColorMode();
   let navigate = useNavigate();
   const [notifications, setNotifications] = useState([]);
+
   const get_storage_data = async () => {
     const token = localStorage.getItem("token");
     if (token === null) {
     } else {
         try {
-          const response = await fetch(`${SERVER_URL}api/notifications/get_notifications/`, {
+          const data = {
+            token: token
+          };
+          const response = await fetch(`${SERVER_URL}notifications-api/get_notifications`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({token}),
-        });
-            
-          if (!response.ok) {
-              const responseBody = await response.json();
-              console.log(responseBody.data);
-              setNotifications(responseBody.data);
+            body: JSON.stringify(data),
+          });
+          if (response.ok) {
+            const responseBody = await response.json();
+            console.log(responseBody.data);
+            setNotifications(responseBody.data);
           }
         } catch (error) {
           alert(error);
@@ -199,10 +202,31 @@ function NotificationsMenu() {
     get_storage_data();
   }, []);
 
-  // Usuwanie notyfikacji
-  const deleteNotification = (id) => {
-    setNotifications(notifications.filter(notification => notification.id !== id));
-    // Tu możesz dodać żądanie do serwera, aby usunąć notyfikację
+  const deleteNotification =  async (notification_id) => {
+    const token = localStorage.getItem("token");
+    if (token === null) {
+    } else {
+        try {
+          const data = {
+            token: token,
+            notification_id: notification_id,
+          };
+          const response = await fetch(`${SERVER_URL}notifications-api/del_notification`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+          });
+          if (response.ok) {
+            const responseBody = await response.json();
+            console.log(responseBody.data);
+          }
+        } catch (error) {
+          alert(error);
+        }
+    }
+    get_storage_data();
   };
 
   return (
@@ -229,7 +253,46 @@ function NotificationsMenu() {
     > 
     <div className="p-1">
       <h1 className="m-1 mb-3 text-2xl">Notifications</h1>
-      <div className="border rounded-lg p-2 flex-row flex justify-between items-center my-2">
+      {notifications.map(notifi => {
+        // <h1 key={notifi["request_id"]}>{notifi["body"]}</h1>
+        if (notifi["type"] === "request") {
+        return (
+        notifi["type"] === "request" ? (
+          <div className="border rounded-lg p-2 flex-row flex justify-between items-center my-2">
+            <ArrowUpFromLine />
+            <div className="ml-1 flex w-32 justify-center">
+              {notifi["body"]}
+            </div>
+            <div className="flex flex-row">
+            <Button onClick={() => deleteNotification(notifi["id"])} 
+            className="" variant="ghost" size="icon">
+              <Trash2 />
+            </Button>
+            <Button className="" variant="ghost" size="icon">
+              <Check />
+            </Button>
+            </div>
+          </div>
+        ) : null )
+        } else if (notifi["type"] === "text") {
+        notifi["type"] === "text" ? (
+          <div className="border rounded-lg p-2 flex-row flex justify-between items-center my-2">
+            <Megaphone />
+            <div className="ml-1">
+              {notifi["body"]}
+            </div>
+            <Button
+            onClick={() => deleteNotification(notifi["id"])}
+            className="ml-2" variant="ghost" size="icon">
+              <Trash2 />
+            </Button>
+          </div>
+        ) : null
+        } else {
+          return null; // Return nothing if the type is not "request" or "text"
+        }
+      })}
+      {/* <div className="border rounded-lg p-2 flex-row flex justify-between items-center my-2">
         <Megaphone />
         <div className="ml-1">
           Bodyaa
@@ -251,7 +314,7 @@ function NotificationsMenu() {
           <Check />
         </Button>
         </div>
-      </div>
+      </div> */}
     </div>
     </MenuItems>
   </Transition>

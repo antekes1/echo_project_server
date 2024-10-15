@@ -113,6 +113,7 @@ class Request(Base):
     storage_id = Column(Integer, nullable=True)
     event_id = Column(Integer, nullable=True)
     friend_id = Column(Integer, nullable=True)
+    sender_id = Column(Integer, nullable=False) #sender of request
 
 class Chatroom(Base):
     __tablename__ = "chat_rooms"

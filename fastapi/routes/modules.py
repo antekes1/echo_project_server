@@ -37,14 +37,15 @@ async def create_notification(db, user_id, type, request_id, body):
     new_notification.inbox.append(inbox)
     return new_notification
 
-async def create_request(db, type,  user_id, storage_id, event_id, friend_id):
-    # data = await get_current_user(token=token, db=db)
-    # if 'username' in data:
-    #     username = data['username']
-    #     id = data['id']
-    #     user = db.query(models.User).filter(models.User.id == id).first()
-    # if user is None:
-    #     raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid token")
+async def create_request(token, db, type,  user_id, storage_id, event_id, friend_id):
+    data = await get_current_user(token=token, db=db)
+    if 'username' in data:
+        username = data['username']
+        id = data['id']
+        sender = db.query(models.User).filter(models.User.id == id).first()
+    if sender is None:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid token")
+
     user = db.query(models.User).filter(models.User.id == user_id).first()
     if user is None:
          raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid user id")
@@ -55,6 +56,7 @@ async def create_request(db, type,  user_id, storage_id, event_id, friend_id):
             user_id = user_id,
             type = "storage_request",
             storage_id = storage_id,
+            sender_id=sender.id,
         )
     elif type == "friend_request":
         to_check = "friend_id"
@@ -64,7 +66,8 @@ async def create_request(db, type,  user_id, storage_id, event_id, friend_id):
         new_request = models.Request(
             user_id=user.id,
             type="friend_request",
-            friend_id=friend_id
+            friend_id=friend_id,
+            sender_id=sender.id,
         )
     elif type == "calendar_event_request":
         to_check = "event_id"
@@ -72,7 +75,8 @@ async def create_request(db, type,  user_id, storage_id, event_id, friend_id):
         new_request = models.Request(
             user_id=user.id,
             type="calendar_event_request",
-            event_id=event_id
+            event_id=event_id,
+            sender_id=sender.id,
         )
     else:
         return "invalid request type"

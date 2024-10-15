@@ -35,3 +35,6 @@ class updateUser(BaseModel):
 class addFriend(BaseModel):
     token: str
     username: str
+
+class searchUsers(BaseModel):
+    search_text: str

@@ -110,7 +110,7 @@ async def add_event(db: db_dependency, request: CreateEventBase):
     for user_to_add in users:
         user_to_add = db.query(models.User).filter(models.User.id == user_to_add).first()
         calendar2 = db.query(models.Calendar).filter(models.Calendar.owner_id == user_to_add.id).first()
-        data = await create_request(db, type="calendar_event_request", event_id=create_event.id, storage_id=0, user_id=user_to_add.id, friend_id=0)
+        data = await create_request(token=request.token,db=db, type="calendar_event_request", event_id=create_event.id, storage_id=0, user_id=user_to_add.id, friend_id=0)
         db.add(data["request"])
         db.commit()
         notify = await create_notification(db=db, type="request", user_id=user.id, request_id=data["request"].id, body="You have a new request")
@@ -184,7 +184,7 @@ async def edit_event(db: db_dependency, request: EditEventBase):
     for user_to_add in users_to_add:
         user_to_add = db.query(models.User).filter(models.User.id == user_to_add).first()
         calendar2 = db.query(models.Calendar).filter(models.Calendar.owner_id == user_to_add.id).first()
-        data = await create_request(db, type="calendar_event_request", event_id=to_edit.id, storage_id=0, user_id=user_to_add.id, friend_id=0)
+        data = await create_request(token=request.token, db=db, type="calendar_event_request", event_id=to_edit.id, storage_id=0, user_id=user_to_add.id, friend_id=0)
         db.add(data["request"])
         db.commit()
         notify = await create_notification(db=db, type="request", user_id=user.id, request_id=data["request"].id,

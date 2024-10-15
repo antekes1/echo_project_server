@@ -12,7 +12,7 @@ from passlib.context import CryptContext
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from settings import secret_key_token, algorithm
 from .auth import get_current_user, bcrypt_context
-from schemas.request import requestAction
+from schemas.request import requestAction, getRequests
 from sqlalchemy.orm.attributes import flag_modified
 
 router = APIRouter(
@@ -30,6 +30,40 @@ def get_db():
 
 db_dependency = Annotated[Session, Depends(get_db)]
 
+@router.post("/get_requests", status_code=status.HTTP_200_OK)
+async def request_action(db: db_dependency, requestt: getRequests):
+    data = await get_current_user(token=requestt.token, db=db)
+    if 'username' in data:
+        username = data['username']
+        id = data['id']
+        user = db.query(models.User).filter(models.User.id == id).first()
+    if user is None:
+        raise HTTPException(status_code=404, detail='User not found')
+    requests = db.query(models.Request).filter(models.Request.user_id == user.id).all()
+    requests_with_info = []
+    for request in requests:
+        sender = db.query(models.User).filter(models.User.id == request.sender_id).first()
+        request_info = {"id": request.id, "type": request.type, "sender": sender.username}
+        if request.type == "friend_request":
+            person = db.query(models.User).filter(models.User.id == request.friend_id).first()
+            if person:
+                request_info["friend_username"] = person.username
+                request_info["friend_name"] = person.name
+        elif request.type == "storage_request":
+            storage = db.query(models.Storage).filter(models.Storage.id == request.storage_id).first()
+            if storage:
+                request_info["storage_name"] = storage.name
+                storage_owner = db.query(models.User).filter(models.User.id == storage.owner_id).first
+                request_info["storage_owner"] = storage_owner.username
+        elif request.type == "calendar_event_request":
+            event = db.query(models.Calendar_event).filter(models.Calendar_event.id == request.event_id)
+            if event:
+                request_info["event_name"] = event.name
+                request_info["event_date"] = event.dates
+        else:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="That request type does not exist")
+        requests_with_info.append(request_info)
+    return {"msg": "success", "data": requests_with_info}
 @router.post("/reply_on_request", status_code=status.HTTP_200_OK)
 async def request_action(db: db_dependency, request: requestAction):
     data = await get_current_user(token=request.token, db=db)

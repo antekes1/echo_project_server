@@ -10,7 +10,7 @@ from starlette import status
 from database import SeesionLocal
 from pathlib import Path
 
-from schemas.user import Token, UserBase, updateUser, addFriend
+from schemas.user import Token, UserBase, updateUser, addFriend, searchUsers
 from .auth import get_current_user
 from .modules import create_request, create_notification
 
@@ -37,7 +37,7 @@ async def read_user(user_token: str, db: db_dependency):
     
     if user is None:
         raise HTTPException(status_code=404, detail='User not found')
-    data = {'username': user.username, 'profile_pic': user.profile_photo, 'email': user.email, 'name': user.name, 'account_type': user.perm}
+    data = {'username': user.username, 'profile_pic': user.profile_photo, 'email': user.email, 'name': user.name, 'account_type': user.perm, "friends": user.friends}
     return data
 
 
@@ -99,13 +99,30 @@ async def add_friend(db: db_dependency, request: addFriend):
     if user_to_add is None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User to add does not exist")
     #create request
-    request_data = await create_request(db, type="friend_request", user_id=user_to_add.id, storage_id=0, event_id=0, friend_id=user.id)
+    request_data = await create_request(token=request.token, db=db, type="friend_request", user_id=user_to_add.id, storage_id=0, event_id=0, friend_id=user.id)
     if request_data["msg"] == "success":
         db.add(request_data["request"])
         db.commit()
         print(request_data["request"].id)
-        notify = await create_notification(db=db, type="request", user_id=user.id, request_id=request_data["request"].id,
+        notify = await create_notification(db=db, type="request", user_id=user_to_add.id, request_id=request_data["request"].id,
                                            body="You have a new request")
         db.add(notify)
         db.commit()
     return {"msg": "success"}
+
+#del friend
+
+@router.post("/search_users", status_code=status.HTTP_200_OK)
+async def search_users(db: db_dependency, request: searchUsers):
+    search_text = f"%{request.search_text}%"
+    search_by_username = db.query(models.User).filter(models.User.username.ilike(search_text)).all()
+    search_by_name = db.query(models.User).filter(models.User.name.ilike(search_text)).all()
+    all_users = []
+    for searched_users in search_by_username:
+        all_users.append({"id": searched_users.id, "username": searched_users.username, "name": searched_users.name})
+    # for searched_users in search_by_name:
+    #     all_users.append({"id": searched_users.id, "username": searched_users.username, "name": searched_users.name})
+    for user in search_by_name:
+        if user.id not in [u["id"] for u in all_users]:
+            all_users.append({"id": user.id, "username": user.username, "name": user.name})
+    return {"msg": "success", "data": all_users}

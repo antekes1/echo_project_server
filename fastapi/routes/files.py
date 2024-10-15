@@ -192,7 +192,7 @@ async def updated_storage_users(db: db_dependency, request: ManageUsersStorages)
                             # storage.valid_users.append(user_toadd)
                             #request
                             print(storage.id)
-                            request_data = await create_request(db, type="storage_request", user_id=user_toadd.id,
+                            request_data = await create_request(db=db, token=request.token, type="storage_request", user_id=user_toadd.id,
                                                                 storage_id=storage.id, event_id=0, friend_id=0)
                             if request_data["msg"] == "success":
                                 db.add(request_data["request"])

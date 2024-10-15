@@ -93,7 +93,7 @@ const Home = () => {
             <div className="flex whitespace-nowrap gap-3 transition-transform w-[max-content]" style={{transform: `translateX(-${translate}px)`}}>
               {categories.length === 0 ?
               <div>
-                <h1>You have not storages</h1>
+                <h1>You have not any storages</h1>
               </div>
               :undefined}
               {categories.map(category => (
