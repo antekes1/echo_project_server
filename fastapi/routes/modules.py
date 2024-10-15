@@ -86,6 +86,10 @@ async def create_request(token, db, type,  user_id, storage_id, event_id, friend
         getattr(models.Request, to_check) == value_to_check
     ).first()
 
+    if type == "friend_request":
+        test_friend_bug = db.query(models.Request).filter(models.Request.user_id == friend_id, models.Request.friend_id == user.id).first()
+        if test_friend_bug:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Friend request for you from that user already exist")
     if existing_request:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Event request already exists")
     else:
