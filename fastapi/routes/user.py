@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 from starlette import status
 from database import SeesionLocal
 from pathlib import Path
+from sqlalchemy.orm.attributes import flag_modified
 
 from schemas.user import Token, UserBase, updateUser, addFriend, searchUsers
 from .auth import get_current_user
@@ -111,6 +112,26 @@ async def add_friend(db: db_dependency, request: addFriend):
     return {"msg": "success"}
 
 #del friend
+@router.post("/del_friend", status_code=status.HTTP_200_OK)
+async def del_friend(db: db_dependency, request: addFriend):
+    data = await get_current_user(token=request.token, db=db)
+    if 'username' in data:
+        username = data['username']
+        id = data['id']
+        user = db.query(models.User).filter(models.User.id == id).first()
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid token")
+    user_to_add = db.query(models.User).filter(models.User.username == request.username).first()
+    if user_to_add is None:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User to add does not exist")
+    if not user_to_add.id in user.friends:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="This user is not in your friends")
+    user.friends.remove(user_to_add.id)
+    user_to_add.friends.remove(user.id)
+    flag_modified(user, "friends")
+    flag_modified(user_to_add, "friends")
+    db.commit()
+    return {"msg": "success"}
 
 @router.post("/search_users", status_code=status.HTTP_200_OK)
 async def search_users(db: db_dependency, request: searchUsers):

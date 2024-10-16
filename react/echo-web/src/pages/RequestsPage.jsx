@@ -1,15 +1,18 @@
 import user from "../assets/images/user.png"
-import React, { useEffect, useRef, useState } from 'react';
+import React, { act, useEffect, useRef, useState } from 'react';
 import { Button } from '../components/Button';
-import { ContactRound, Search, UserMinus, UserPlus } from 'lucide-react';
+import { Check, ContactRound, Search, UserMinus, UserPlus, CircleMinus } from 'lucide-react';
 import { Sidebar } from '../layouts/Sidebar';
 import { useSidebarContext } from '../contexts/SidebarContext';
 import { useNavigate } from 'react-router-dom';
 import useColorMode from '../hooks/useColorMode.jsx'
 import SERVER_URL from "../settings.jsx";
+import Toast from "../components/liveToast.jsx";
 
 const RequestsPage = () => {
     const [colorMode, setColorMode] = useColorMode();
+    const [showTost, setShowTost] = useState(false);
+    const [toastContent, setToastContent] = useState({ title: "", body: ""});
     const [userdata, setUserData] = useState({});
     const [searchTerm, setSearchTerm] = useState("");
     const [showResults, setShowResults] = useState(false);
@@ -20,7 +23,50 @@ const RequestsPage = () => {
         setSearchTerm(e.target.value);
     };
 
-    // Funkcja do pokazania wyników po kliknięciu przycisku
+    const handleShowToast = (title, body, icon = null) => {
+        setToastContent({ title, body, icon });
+        setShowTost(true);
+        setTimeout(() => {
+          setShowTost(false);
+        }, 7000);
+    };
+
+    const respond_on_request = async (action, request_id) => {
+        try {
+            const data = {
+                token: token,
+                request_id: request_id,
+                action: action,
+            };
+            const response = await fetch(`${SERVER_URL}api-request/reply_on_request`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(data),
+            })
+    
+            if (!response.ok) {
+                const errorText = await response.text(); 
+                throw new Error(`Error ${response.status}: ${errorText}`);
+            }
+            const responseBody = await response.json();
+            if (responseBody["msg"] === "success") {
+                if(action === "accept") {
+                handleShowToast("success", "Request accepted sucessfully", <Check className="text-green-600" />);
+                } else {
+                    handleShowToast("success", "Request rejected sucessfully", <Check className="text-green-600" />);
+                }
+            } else {
+                handleShowToast(responseBody["msg"], "", <Check className="text-green-600" />);
+            }
+            get_requests();
+          } catch (error) {
+            alert(error);
+        }
+        setShowResults(true);
+    };
+
     const handleSearch = async () => {
         try {
             const data = {
@@ -46,6 +92,31 @@ const RequestsPage = () => {
         setShowResults(true);
     };
 
+    const get_requests = async () => {
+        try {
+            const data = {
+                token: token,
+            };
+            const response = await fetch(`${SERVER_URL}api-request/get_requests`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(data),
+            })
+    
+            if (!response.ok) {
+                const errorText = await response.text(); 
+                throw new Error(`Error ${response.status}: ${errorText}`);
+            }
+            const responseBody = await response.json();
+            setYourRequests(responseBody["data"])
+          } catch (error) {
+            alert(error);
+        }
+        setShowResults(true);
+    };
+
     const get_user_data = async () => {
         if (token === null) {}
         else {
@@ -61,6 +132,7 @@ const RequestsPage = () => {
                 }
                 const responseBody = await response.json();
                 setUserData(responseBody);
+                get_requests();
               } catch (error) {
                 alert(error);
             }
@@ -100,22 +172,63 @@ const RequestsPage = () => {
                         {/* searched users */}
                             <div className="flex w-full items-center flex-col">
                                 <h2 className="mb-2">Your requests:</h2>
-                                {/* {friendsInfo.map(({ friend, friendInfo }) => (
-                                    <div key={friend} className="rounded-xl border justify-between p-2 flex w-1/2">
-                                        {friendInfo}
-                                        <div className="flex flex-row">
-                                            <UserMinus className="mx-3" />
-                                            <ContactRound className="mr-1" />
+                                {yourRequests.map(request => (
+                                    <div key={request.id} className="rounded-xl border items-center justify-between p-2 flex w-1/2">
+                                        <div>
+                                        {/* {request.id} */}
+                                        {request.type === "friend_request" && (
+                                            <div>
+                                            <h2>
+                                                You have a new friend request by
+                                            </h2>
+                                            <p>@{request.friend_username} - {request.friend_name}</p>
+                                            </div>
+                                        )}
+                                        {request.type === "storage_request" && (
+                                            <div>
+                                            <h2>
+                                                You have a new storage request to
+                                            </h2>
+                                            <p>{request.storage_name} storage you are invited by {request.sender}</p>
+                                            </div>
+                                        )}
+                                        {request.type === "calendar_event_request" && (
+                                            <div>
+                                            <h2>
+                                                {request.sender} invited you to
+                                            </h2>
+                                            <p>{request.event_name} at {request.event_date}</p>
+                                            </div>
+                                        )}
                                         </div>
-                                </div> */}
-                            {/* <div className="rounded-xl border justify-between p-2 flex w-1/2">
-                                Bartek nowak
-                                <div className="flex flex-row">
-                                <UserMinus className="mx-3" />
-                                <ContactRound className="mr-1" />
-                                </div>
-                            </div> */}
+                                        <div className="flex flex-row">
+                                            <button onClick={() => {respond_on_request("accept", request.id)}}>
+                                                <Check className="mx-3" />
+                                            </button>
+                                            <button onClick={() => {respond_on_request("reject", request.id)}}>
+                                                <CircleMinus className="mr-1" />
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            {/* // <div className="rounded-xl border justify-between p-2 flex w-1/2">
+                            //     Bartek nowak
+                            //     <div className="flex flex-row">
+                            //     <UserMinus className="mx-3" />
+                            //     <ContactRound className="mr-1" />
+                            //     </div>
+                            // </div> */}
                         </div>
+                    </div>
+                    <div className="relative">
+                    {showTost && (
+                        <Toast
+                        title={toastContent.title} 
+                        body={toastContent.body} 
+                        setShowToast={setShowTost}
+                        icon={toastContent.icon}
+                    />
+                    )}
                     </div>
                     </div>
                 </div>

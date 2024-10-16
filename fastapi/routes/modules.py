@@ -63,6 +63,8 @@ async def create_request(token, db, type,  user_id, storage_id, event_id, friend
         value_to_check = friend_id
         if friend_id in user.friends:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="That user is already your friend")
+        if user.id == friend_id:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="You can't add yourself as your friend")
         new_request = models.Request(
             user_id=user.id,
             type="friend_request",
@@ -91,7 +93,7 @@ async def create_request(token, db, type,  user_id, storage_id, event_id, friend
         if test_friend_bug:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Friend request for you from that user already exist")
     if existing_request:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Event request already exists")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="That request already exists")
     else:
         # add notification for user
         return {"msg": "success", "request": new_request} #add notificatons in parentrs

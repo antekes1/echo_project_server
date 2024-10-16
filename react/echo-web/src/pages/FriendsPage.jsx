@@ -118,6 +118,38 @@ const FriendsPage = () => {
         }
     };
 
+    const remove_friend = async (to_remove_username) => {
+        if (token === null) {}
+        else {
+            try {
+                const data = {
+                    token: token,
+                    username: to_remove_username,
+                };
+                const response = await fetch(`${SERVER_URL}user/del_friend`, {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data),
+                })
+
+                if (!response.ok) {
+                    const errorText = await response.text(); 
+                    throw new Error(`Error ${response.status}: ${errorText}`);
+                }
+                const responseBody = await response.json();
+
+                if (responseBody["msg"] === "success") {
+                    handleShowToast("success", "Friend removed succesfully", <Check className="text-green-600" />);
+                    get_user_data();
+                }
+            } catch (error) {
+                alert(error);
+            }
+        }
+    };
+
     
     const get_user_info = async (id) => {
         try {
@@ -181,6 +213,7 @@ const FriendsPage = () => {
                             <h1 className="mt-4">{userdata.username? `@${userdata.username}` :"@username"}</h1>
                             <p>{userdata.name? userdata.name :"Please login"}</p>
                             <h1 className="border-2 px-2 rounded-3xl border-x-violet-500 border-y-violet-300">{userdata.email? `${userdata.email}` :"Please login"}</h1>
+                            <a className="m-2 flex border p-1 hover:bg-violet-500/30 hover:border-violet-400" href="/requests">Your friend requests</a>
                         </div>
                     </div>
                     <div className="flex w-full lg:w-2/3 items-center flex-col justify-center">
@@ -215,7 +248,9 @@ const FriendsPage = () => {
                                     <div key={friend} className="rounded-xl border justify-between p-2 flex w-1/2">
                                         {friendInfo}
                                         <div className="flex flex-row">
-                                            <UserMinus className="mx-3" />
+                                            <button onClick={() => {remove_friend(friendInfo)}}>
+                                                <UserMinus className="mx-3" />
+                                            </button>
                                             <ContactRound className="mr-1" />
                                         </div>
                                 </div>

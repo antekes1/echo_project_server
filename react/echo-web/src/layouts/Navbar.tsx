@@ -268,7 +268,10 @@ function NotificationsMenu() {
             className="" variant="ghost" size="icon">
               <Trash2 />
             </Button>
-            <Button className="" variant="ghost" size="icon">
+            <Button onClick={() => {
+              navigate('/requests');
+              deleteNotification(notifi["id"]);
+            }} className="" variant="ghost" size="icon">
               <Check />
             </Button>
             </div>
