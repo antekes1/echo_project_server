@@ -197,8 +197,8 @@ async def updated_storage_users(db: db_dependency, request: ManageUsersStorages)
                             if request_data["msg"] == "success":
                                 db.add(request_data["request"])
                                 db.commit()
-                                notify = await create_notification(db=db, type="request", user_id=user.id,
-                                                                   request_id=data["request"].id,
+                                notify = await create_notification(db=db, type="request", user_id=user_toadd.id,
+                                                                   request_id=request_data["request"].id,
                                                                    body="You have a new request")
                                 db.add(notify)
                         else:

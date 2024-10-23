@@ -2,16 +2,19 @@ import { Navigate, useParams } from 'react-router-dom';
 import user from "../../assets/images/user.png"
 import React, { useEffect, useRef, useState } from 'react';
 import { Button } from '../../components/Button';
-import { Settings, ArrowLeft, File, Folder, Download, Trash2, Plus, Upload, FolderPlus } from 'lucide-react';
+import { Settings, ArrowLeft, File, Folder, Download, Trash2, Plus, Upload, FolderPlus, Check } from 'lucide-react';
 import { Sidebar } from '../../layouts/Sidebar';
 import { useSidebarContext } from '../../contexts/SidebarContext';
 import { useNavigate } from 'react-router-dom';
 import useColorMode from "../../hooks/useColorMode.jsx"
 import Modal from "../../components/Modal.jsx"
 import SERVER_URL from '../../settings.jsx';
+import Toast from "../../components/liveToast.jsx";
     
 const StorageSettingsPage = () => {
     const { id } = useParams();
+    const [showTost, setShowTost] = useState(false);
+    const [toastContent, setToastContent] = useState({ title: "", body: ""});
     const [colorMode, setColorMode] = useColorMode();
     const [current_users, setCurrentUsers] = useState([]);
     const [name, setname] = useState('');
@@ -29,6 +32,13 @@ const StorageSettingsPage = () => {
     const del_storagehandle_click = (event) => {
         event.stopPropagation();
         setOpen2(true);
+    };
+    const handleShowToast = (title, body, icon = null) => {
+        setToastContent({ title, body, icon });
+        setShowTost(true);
+        setTimeout(() => {
+          setShowTost(false);
+        }, 7000);
     };
     const update_storage_info = async () => {
         try{
@@ -52,6 +62,7 @@ const StorageSettingsPage = () => {
                 throw new Error(`Error ${response.status}: ${errorText}`);
             }
             const responseBody = await response.json();
+            handleShowToast("", responseBody.msg);
             alert(responseBody.msg);
             get_storage_info();
         } catch (error) {
@@ -109,7 +120,7 @@ const StorageSettingsPage = () => {
                 throw new Error(`Error ${response.status}: ${errorText}`);
             }
             const responseBody = await response.json();
-            alert(responseBody.msg);
+            handleShowToast("success", responseBody.msg);
             get_current_users();
         } catch (error) {
             alert(error);
@@ -168,7 +179,11 @@ const StorageSettingsPage = () => {
                 throw new Error(`Error ${response.status}: ${errorText}`);
             }
             const responseBody = await response.json();
-            alert(responseBody.msg);
+            if(responseBody["msg"] === "succes") {
+                handleShowToast("success", "User removed suucefullly", <Check className="text-green-600" />);
+            } else {
+                handleShowToast("", responseBody.msg);
+            }
             get_current_users();
             setOpen1(false);
         } catch (error) {
@@ -197,7 +212,7 @@ const StorageSettingsPage = () => {
             }
             const responseBody = await response.json();
             navigate("/");
-            alert(responseBody.msg);
+            handleShowToast("message: ", responseBody.msg);
         } catch (error) {
             alert(error);
         };
@@ -316,6 +331,17 @@ const StorageSettingsPage = () => {
                             </Button>
                         </div>
                     </div>
+                </div>
+
+                <div className="relative">
+                    {showTost && (
+                        <Toast
+                        title={toastContent.title} 
+                        body={toastContent.body} 
+                        setShowToast={setShowTost}
+                        icon={toastContent.icon}
+                    />
+                    )}
                 </div>
             </div>
         </div>

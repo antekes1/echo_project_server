@@ -18,6 +18,8 @@ import ProtectedRoute from "./contexts/ProcetRouteContext.jsx";
 import CreateStoragePage from "./pages/storage/CreateStoragePage.jsx";
 import FriendsPage from "./pages/FriendsPage.jsx";
 import RequestsPage from "./pages/RequestsPage.jsx";
+import RoomPage from "./pages/messgages/RoomPage.jsx";
+import MessagesRoomPage from "./pages/messgages/MRoomsPage.jsx";
 
 const App = () => {
   const token = localStorage.getItem('token');
@@ -43,6 +45,8 @@ const App = () => {
             <Route path="/storage_page/:id" element={<ProtectedRoute><StoragePage /></ProtectedRoute>} />
             <Route path="/storage_settings/:id" element={<ProtectedRoute token={token}><StorageSettingsPage /></ProtectedRoute>} />
             <Route path="/create_storage/" element={<ProtectedRoute token={token}><CreateStoragePage /></ProtectedRoute>} />
+            <Route path="/messages/" element={<ProtectedRoute token={token}><MessagesRoomPage /></ProtectedRoute>} />
+            <Route path="/r/:id" element={<ProtectedRoute><RoomPage /></ProtectedRoute>} />
         </Routes>
     </Router>
     </div>

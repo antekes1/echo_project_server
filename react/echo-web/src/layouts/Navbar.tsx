@@ -258,7 +258,7 @@ function NotificationsMenu() {
         if (notifi["type"] === "request") {
         return (
         notifi["type"] === "request" ? (
-          <div className="border rounded-lg p-2 flex-row flex justify-between items-center my-2">
+          <div key={notifi["id"]} className="border rounded-lg p-2 flex-row flex justify-between items-center my-2">
             <ArrowUpFromLine />
             <div className="ml-1 flex w-32 justify-center">
               {notifi["body"]}
@@ -278,8 +278,9 @@ function NotificationsMenu() {
           </div>
         ) : null )
         } else if (notifi["type"] === "text") {
+        return (
         notifi["type"] === "text" ? (
-          <div className="border rounded-lg p-2 flex-row flex justify-between items-center my-2">
+          <div key={notifi["id"]} className="border rounded-lg p-2 flex-row flex justify-between items-center my-2">
             <Megaphone />
             <div className="ml-1">
               {notifi["body"]}
@@ -290,7 +291,7 @@ function NotificationsMenu() {
               <Trash2 />
             </Button>
           </div>
-        ) : null
+        ) : null )
         } else {
           return null; // Return nothing if the type is not "request" or "text"
         }

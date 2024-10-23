@@ -6,3 +6,8 @@ class DelNoti(BaseModel):
 
 class GetNotifications(BaseModel):
     token: str
+
+class PostNotification(BaseModel):
+    token: str
+    users: list
+    body: str

@@ -6,6 +6,7 @@ class Perms:
         self.edit_storages = 'edit_storages'
         self.manage_users = "manage_users"
         self.del_calendar_event = "del_calendar_event"
+        self.sent_notifications = "sent_notifications"
 
 class Permissions:
     def __init__(self):

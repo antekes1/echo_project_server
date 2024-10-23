@@ -54,7 +54,7 @@ async def request_action(db: db_dependency, requestt: getRequests):
             if storage:
                 request_info["storage_name"] = storage.name
                 storage_owner = db.query(models.User).filter(models.User.id == storage.owner_id).first
-                request_info["storage_owner"] = storage_owner.username
+                request_info["storage_owner"] = storage_owner
         elif request.type == "calendar_event_request":
             event = db.query(models.Calendar_event).filter(models.Calendar_event.id == request.event_id)
             if event:
