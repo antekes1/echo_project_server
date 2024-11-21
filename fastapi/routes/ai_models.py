@@ -18,7 +18,7 @@ from functions.friday.chat import Friday_chat
 from settings import storages_path, archives_files_path
 
 client = OpenAI(
-    api_key='sk-B4EtJg3uYh7suTX1HccJvYUQB-y9GxrhNOsmry5C9-T3BlbkFJ1Z7yJHl8It52-rUEngCBDGKhRZTcxdAJTMSIqI9FgA',
+    api_key='',
 )
 
 router = APIRouter(
@@ -35,26 +35,26 @@ def get_db():
 
 db_dependency = Annotated[Session, Depends(get_db)]
 
-assistant = client.beta.assistants.create(
-  name="Friday",
-  instructions="""
-  Jesteś asystentem głosowym. Jeśli użytkownik prosi o wykonanie jakiejś akcji (np. utworzenie notatki), 
-    zwróć odpowiedź w formacie JSON, która zawiera odpowiedź dla użytkownika oraz akcję do wykonania.
-    Format JSON, który zwracasz, powinien wyglądać następująco:
-    {
-      "reply": "Twoja odpowiedź dla użytkownika",
-      "action": {
-        "action": "nazwa_akcji" lub "none",
-        "content": "treść notatki lub inne dane, jeśli istnieją"
-      }
-    }
-
-  Jeśli użytkownik po prostu rozmawia, ustaw akcję jako "none".
-  """,
-  tools=[{"type": "code_interpreter"}],
-  model="gpt-4o-mini",
-)
-thread = client.beta.threads.create()
+# assistant = client.beta.assistants.create(
+#   name="Friday",
+#   instructions="""
+#   Jesteś asystentem głosowym. Jeśli użytkownik prosi o wykonanie jakiejś akcji (np. utworzenie notatki),
+#     zwróć odpowiedź w formacie JSON, która zawiera odpowiedź dla użytkownika oraz akcję do wykonania.
+#     Format JSON, który zwracasz, powinien wyglądać następująco:
+#     {
+#       "reply": "Twoja odpowiedź dla użytkownika",
+#       "action": {
+#         "action": "nazwa_akcji" lub "none",
+#         "content": "treść notatki lub inne dane, jeśli istnieją"
+#       }
+#     }
+#
+#   Jeśli użytkownik po prostu rozmawia, ustaw akcję jako "none".
+#   """,
+#   tools=[{"type": "code_interpreter"}],
+#   model="gpt-4o-mini",
+# )
+# thread = client.beta.threads.create()
 
 # @router.post("/friday", status_code=status.HTTP_200_OK)
 # async def read_user(request: FridayBase, db: db_dependency):
@@ -74,40 +74,40 @@ thread = client.beta.threads.create()
 #     else:
 #         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f'Invalid data')
 
-def generate_response_and_action(user_input):
-    # Zdefiniuj rolę systemową i instrukcje
-    system_prompt = """
-    Jesteś asystentem głosowym. Jeśli użytkownik prosi o wykonanie jakiejś akcji (np. utworzenie notatki), 
-    zwróć odpowiedź w formacie JSON, która zawiera odpowiedź dla użytkownika oraz akcję do wykonania.
-    Format JSON, który zwracasz, powinien wyglądać następująco:
-    {
-      "reply": "Twoja odpowiedź dla użytkownika",
-      "action": {
-        "action": "nazwa_akcji" lub "none",
-        "content": "treść notatki lub inne dane, jeśli istnieją"
-      }
-    }
-
-    Jeśli użytkownik po prostu rozmawia, ustaw akcję jako "none".
-    """
-
-    # response = client.chat.completions.create(
-    #     model="gpt-4o-mini",
-    #     messages=[
-    #         {"role": "system", "content": system_prompt},
-    #         {"role": "user", "content": user_input}
-    #     ]
-    # )
-
-    response = client.beta.threads.messages.create(
-        thread_id=thread.id,
-        role="user",
-        content=user_input,
-    )
-
-    print(response)
-    assistant_reply = response['choices'][0]['message']['content']
-    return assistant_reply
+# def generate_response_and_action(user_input):
+#     # Zdefiniuj rolę systemową i instrukcje
+#     system_prompt = """
+#     Jesteś asystentem głosowym. Jeśli użytkownik prosi o wykonanie jakiejś akcji (np. utworzenie notatki),
+#     zwróć odpowiedź w formacie JSON, która zawiera odpowiedź dla użytkownika oraz akcję do wykonania.
+#     Format JSON, który zwracasz, powinien wyglądać następująco:
+#     {
+#       "reply": "Twoja odpowiedź dla użytkownika",
+#       "action": {
+#         "action": "nazwa_akcji" lub "none",
+#         "content": "treść notatki lub inne dane, jeśli istnieją"
+#       }
+#     }
+#
+#     Jeśli użytkownik po prostu rozmawia, ustaw akcję jako "none".
+#     """
+#
+#     # response = client.chat.completions.create(
+#     #     model="gpt-4o-mini",
+#     #     messages=[
+#     #         {"role": "system", "content": system_prompt},
+#     #         {"role": "user", "content": user_input}
+#     #     ]
+#     # )
+#
+#     response = client.beta.threads.messages.create(
+#         thread_id=thread.id,
+#         role="user",
+#         content=user_input,
+#     )
+#
+#     print(response)
+#     assistant_reply = response['choices'][0]['message']['content']
+#     return assistant_reply
 
 @router.post("/friday", status_code=status.HTTP_200_OK)
 async def read_user(request: FridayBase, db: db_dependency):
