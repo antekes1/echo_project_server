@@ -17,7 +17,7 @@ from pathlib import Path
 import json, os
 from settings import storages_path, archives_files_path
 from utils.permissions import InheritedPermissions, Perms
-from schemas.storage import CreateDatabaseBase, FilesBase, GetFileBase, updateStorage, ManageUsersStorages, StorageInfo, DelStorageBase
+from schemas.storage import CreateDatabaseBase, FilesBase, GetFileBase, updateStorage, ManageUsersStorages, StorageInfo, DelStorageBase, SearchFiles
 from .auth import get_current_user
 from .modules import create_request, create_notification
 
@@ -367,3 +367,38 @@ async def get_files_infile(db: db_dependency, request: FilesBase):
         else:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='That dir already exist')
         return {'msg': 'Dir created successful'}
+
+async def list_files_in_storage(storage_path, full_path, items, text, storage_id):
+    if os.path.isdir(storage_path):
+        path = storage_path.replace(full_path, "/")
+        print(f"Folder: {path}")
+        folder_name = os.path.basename(os.path.normpath(path))
+        if text in folder_name:
+            items.append({"name": folder_name, "type": "folder", "path": path.replace(folder_name, ""), "storage_id": storage_id})
+        for item in os.listdir(storage_path):
+            item_path = os.path.join(storage_path, item)
+            await list_files_in_storage(item_path, full_path=full_path, items=items, text=text, storage_id=storage_id)
+    else:
+        path = storage_path.replace(full_path, "/")
+        print(f"Plik: {path}")
+        filename = os.path.basename(path)
+        if text in filename:
+            items.append({"name": filename, "type": "file", "path": path.replace(filename, ""),
+                          "storage_id": storage_id})
+
+@router.post("/search_files", status_code=status.HTTP_201_CREATED)
+async def search_files(db: db_dependency, request: SearchFiles):
+    data = await get_current_user(token=request.token, db=db)
+    if 'username' in data:
+        username = data['username']
+        id = data['id']
+        user = db.query(models.User).filter(models.User.id == id).first()
+    if user is None:
+        raise HTTPException(status_code=404, detail='User not found')
+    storages = db.query(models.Storage).filter(models.Storage.owner_id == user.id).all()
+    items = []
+    for storage in storages:
+        storage_path = storages_path + str(storage.id) + "/"
+        print("storage path: ", storage_path)
+        await list_files_in_storage(storage_path, full_path=storage_path, items=items, text=request.text, storage_id=storage.id)
+    return {"msg": "success", "data": items}

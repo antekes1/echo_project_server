@@ -31,10 +31,12 @@ class FilesBase(BaseModel):
     storage_id: int
     path: str
 
-
-
 class GetFileBase(BaseModel):
     token: str
     database_id: int
     file_path: str
     filename: str
+
+class SearchFiles(BaseModel):
+    token: str
+    text: str
