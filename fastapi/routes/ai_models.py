@@ -17,10 +17,6 @@ from .auth import get_current_user
 from functions.friday.chat import Friday_chat
 from settings import storages_path, archives_files_path
 
-client = OpenAI(
-    api_key='',
-)
-
 router = APIRouter(
     prefix='/ai',
     tags=['ai']
